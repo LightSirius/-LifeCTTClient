@@ -20,6 +20,7 @@ public class Sample_Player : MonoBehaviour {
             // 근처에 오브젝트를 판별
             if (near != Sample_Interction.LifeKind.Null){
                 lifes[near].Motion();
+                
                 lifes[near].Result();
             }
         }

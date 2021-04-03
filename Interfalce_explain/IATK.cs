@@ -1,0 +1,3 @@
+interface IATK{
+    void Attack();
+}
