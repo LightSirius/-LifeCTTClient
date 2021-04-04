@@ -18,8 +18,8 @@ public class Player : MonoBehaviour {
 
     private Dictionary<PlayerState, IState> dicState = new Dictionary<PlayerState, IState>();
 
-    // TEST용입니다.
-    private Dictionary<LifeType.Kind, Dictionary<Enum, IState>> testDic = new Dictionary<LifeType.Kind, Dictionary<Enum, IState>>();
+    // 생활종류 - 세부종류가 뭔지 
+    private Dictionary<LifeType.Kind, Dictionary<Enum, IState>> lifeStateDic = new Dictionary<LifeType.Kind, Dictionary<Enum, IState>>();
 
     public bool isFarming = false;      // 생활(채집, 낚시 등)을 하고있을 경우 true 안하고 있을 경우 false
 
@@ -37,15 +37,8 @@ public class Player : MonoBehaviour {
         dicState.Add(PlayerState.Walk, walk);
         dicState.Add(PlayerState.Jump, jump);
 
-        // Dictionary<Enum, IState> woodCuttingState = new Dictionary<Enum, IState>();
-        // woodCuttingState.Add(WoodcuttingType.Kind.FlowerTree, new FlowerTreeState());
-        // woodCuttingState.Add(WoodcuttingType.Kind.Tree, new TreeState());
-
-        // testDic.Add(LifeType.Kind.Woodcutting, woodCuttingState);
-
-        // testDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType].OperateEnter();
-        // testDic[LifeType.Kind.Woodcutting][WoodcuttingType.Kind.Tree].OperateEnter();
-
+        InitLifeState();
+        
         // 기본상태는 idle 상태로 설정        
         stateMachine = new StateMachine(idle);    
     }
@@ -122,5 +115,49 @@ public class Player : MonoBehaviour {
         
 
         yield return new WaitForSeconds(durationTime);
+    }
+
+    void InitLifeState()
+    {
+        Dictionary<Enum, IState> FarmingState = new Dictionary<Enum, IState>();
+        Dictionary<Enum, IState> FishingState = new Dictionary<Enum, IState>();
+        Dictionary<Enum, IState> LiveStockState = new Dictionary<Enum, IState>();
+        Dictionary<Enum, IState> MiningState = new Dictionary<Enum, IState>();
+        Dictionary<Enum, IState> WoodCuttingState = new Dictionary<Enum, IState>();
+        
+        FarmingState.Add(FarmingType.Kind.GroundPlant, new GroundState());
+        FarmingState.Add(FarmingType.Kind.UnderGroundPlant, new UnGroundState());
+
+        FishingState.Add(FishingType.Kind.Rod, new RodState());
+        FishingState.Add(FishingType.Kind.Net, new NetState());
+
+        LiveStockState.Add(LivestockType.Kind.Meat, new MeatState());
+        LiveStockState.Add(LivestockType.Kind.Leather, new LeatherState());
+        LiveStockState.Add(LivestockType.Kind.ByProduct, new ByProductState());
+
+        MiningState.Add(MiningType.Kind.Pick, new PickState());
+
+        WoodCuttingState.Add(WoodcuttingType.Kind.Tree, new TreeState());
+        WoodCuttingState.Add(WoodcuttingType.Kind.FruitTree, new FruitTreeState());
+        WoodCuttingState.Add(WoodcuttingType.Kind.FlowerTree, new FlowerTreeState());
+
+        lifeStateDic.Add(LifeType.Kind.Farming, FarmingState);
+        lifeStateDic.Add(LifeType.Kind.Fishing, FishingState);
+        lifeStateDic.Add(LifeType.Kind.Livestock, LiveStockState);
+        lifeStateDic.Add(LifeType.Kind.Mining, MiningState);
+        lifeStateDic.Add(LifeType.Kind.Woodcutting, WoodCuttingState);
+
+        
+        if (nearObject is TreeObject)
+        {
+            lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType].OperateEnter();
+        }
+        else if(nearObject is PlantObject)
+        {
+            lifeStateDic[nearObject.lifeType][(nearObject as PlantObject).farmingType].OperateEnter();
+        }
+
+        // testDic[LifeType.Kind.Woodcutting][WoodcuttingType.Kind.Tree].OperateEnter();
+
     }
 }
