@@ -19,4 +19,11 @@ public class UIMgr : Singleton<UIMgr>
         //LifeProgressBar.fillAmount -= 1f / 20f * Time.deltaTime;
     }
     
+    public void SetLifeUI(bool state){
+        LifeInfoText.gameObject.SetActive(state);
+        LifeProgressBar.gameObject.SetActive(state);
+
+        LifeProgressBar.fillAmount = 1f;
+        LifeInfoText.text = "";
+    }
 }

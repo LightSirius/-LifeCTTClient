@@ -106,6 +106,12 @@ public class Player : MonoBehaviour {
         { // 움직일때 WalkState로 변환
             stateMachine.SetState(dicState[PlayerState.Walk]);
             transform.Translate(camDir * moveSpeed * Time.deltaTime);
+
+            if (isFarming){
+                StopAllCoroutines();        // 임시로 다 끔
+                isFarming = false;
+                UIMgr.Instance.SetLifeUI(false);        // 나중에 여기서 dictionary의 IState.OperatorExit호출 바람
+            }
         }
     }
     
@@ -143,17 +149,19 @@ public class Player : MonoBehaviour {
     // 오브젝트 캐는 이벤트 실행
     IEnumerator PlayerInteraction(){
         // 플레이어가 chunk매니저에게 허락을 받아야함.
-        isFarming = true;              // 나중에 chunkManager에 허락을 받는 코드로 바꾸기
+        if (!isFarming){
+            isFarming = true;              // 나중에 chunkManager에 허락을 받는 코드로 바꾸기
 
-        // 1. 근처오브젝트로 다가감
-        yield return StartCoroutine(MoveToNearObject());
-        // 2. 캐는 애니메이션 실행 및 UI 켜기
-        yield return StartCoroutine(WaitFarmingTime(nearObject.durationTime));
-        // 3. 오브젝트 정보 전송
-        nearObject.Send();
-        // 따로 스폰처리는 나중에
-        Destroy(nearObject);
-        isFarming = false;
+            // 1. 근처오브젝트로 다가감
+            yield return StartCoroutine(MoveToNearObject());
+            // 2. 캐는 애니메이션 실행 및 UI 켜기
+            yield return StartCoroutine(WaitFarmingTime(nearObject.durationTime));
+            // 3. 오브젝트 정보 전송
+            nearObject.Send();
+            // 따로 스폰처리는 나중에
+            Destroy(nearObject);
+            isFarming = false;
+        }
     }
 
     IEnumerator MoveToNearObject(){
