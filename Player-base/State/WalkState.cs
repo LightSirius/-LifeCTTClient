@@ -6,19 +6,17 @@ public class WalkState : IState
 {
     
 
-
     public void OperateEnter()
     {
         
     }
-
     public void OperateExit()
     {
        
     }
-
     public void OperateUpdate()
     {
-        Debug.Log("나걷고있음");
+
+        Debug.Log("이동 이동 이동");
     }
 }

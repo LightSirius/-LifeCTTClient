@@ -6,7 +6,7 @@ public class IdleState : IState
 {
     public void OperateEnter()
     {
-        
+
     }
 
     public void OperateExit()
@@ -16,6 +16,7 @@ public class IdleState : IState
 
     public void OperateUpdate()
     {
+
         Debug.Log("아이들아이들");
     }
 }

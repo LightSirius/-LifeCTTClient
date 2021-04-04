@@ -26,7 +26,23 @@ public class Player : MonoBehaviour {
     private Transform myTransform;
     private InteractionObject nearObject;
 
+
+
+
+    private float h;
+    private float v;
+    public float moveSpeed = 10.0f;
+    public float rotateSpeed = 5.0f;
+  
+    private Vector3 movement;
+    private Transform camVec; // 카메라 벡터
+    private Vector3 camDir; // 카메라가 보는 방향
+    
+    
+    private Rigidbody rb;
+    private bool isJumping = false;
     private void Start() {
+
         myTransform = transform;
 
         IState idle = new IdleState();
@@ -40,7 +56,12 @@ public class Player : MonoBehaviour {
         InitLifeState();
         
         // 기본상태는 idle 상태로 설정        
-        stateMachine = new StateMachine(idle);    
+        stateMachine = new StateMachine(idle);   
+
+    
+        movement = Vector3.zero;
+        camVec = GameObject.Find("CameraVector").transform;
+        camDir = camVec.localRotation * Vector3.forward; 
     }
     void Update() {
         // 키입력
@@ -54,21 +75,52 @@ public class Player : MonoBehaviour {
 
         KeyboardInput();
         stateMachine.DoOperateUpdate();
+
+        rb = GetComponent<Rigidbody>();
+        h = Input.GetAxisRaw("Horizontal");
+        v = Input.GetAxisRaw("Vertical");
+
+ 
     }
     void KeyboardInput()
     {
+          
+    }
+    void Move()
+    {
+        movement.Set(h, 0, v);
 
-        if(Input.GetKeyDown(KeyCode.Space))
+        if (h == 0 && v == 0)
         {
-            // idle상태이거나 Walk상태일때만 점프 가능
-            if(stateMachine.CurrentState == dicState[PlayerState.Idle] || stateMachine.CurrentState == dicState[PlayerState.Walk])
-            {
-                stateMachine.SetState(dicState[PlayerState.Jump]);
-            }
+            // 멈출때 IdleState로 변환
+            stateMachine.SetState(dicState[PlayerState.Idle]);
+            return;
         }
+        else
+        { // 움직일때 WalkState로 변환
+            stateMachine.SetState(dicState[PlayerState.Walk]);
+            transform.Translate(camDir * moveSpeed * Time.deltaTime);
+        }
+    }
+    
+    void Turn()
+    {
+        if (h == 0 && v == 0) // 가만히 있을 땐 회전되지 못하게 막아두는 것
+            return;
+        Quaternion newRotation = Quaternion.LookRotation(camVec.TransformDirection(movement));
+
+        rb.rotation = Quaternion.Slerp(rb.rotation, newRotation, rotateSpeed * Time.deltaTime);
+
+        if (movement != Vector3.zero)
+            rb.MoveRotation(transform.rotation = newRotation);
     }
 
 
+    private void FixedUpdate() 
+    {
+        Move();
+        Turn();
+    }
     private void OnTriggerEnter(Collider other) {
         // 근처에 있는 오브젝트 판별
         nearObject = other.GetComponent<InteractionObject>();    
