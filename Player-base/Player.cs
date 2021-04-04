@@ -97,7 +97,8 @@ public class Player : MonoBehaviour {
         yield return StartCoroutine(WaitFarmingTime(nearObject.durationTime));
         // 3. 오브젝트 정보 전송
         nearObject.Send();
-
+        // 따로 스폰처리는 나중에
+        Destroy(nearObject);
         isFarming = false;
     }
 
@@ -128,6 +129,7 @@ public class Player : MonoBehaviour {
             yield return new WaitForSeconds(0.01f);
         }
         lifestate.OperateExit();
+        
     
     }
 
