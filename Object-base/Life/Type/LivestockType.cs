@@ -1,6 +1,6 @@
 public class LivestockType{
     public enum Kind{
-        Meat,
+        Meat = 0,
         Leather,
         ByProduct,
         Count

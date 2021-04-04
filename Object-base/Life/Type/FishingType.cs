@@ -1,6 +1,6 @@
 public class FishingType{
     public enum Kind{
-        Rod,        // ³¬½Ã´ë
+        Rod = 0,        // ³¬½Ã´ë
         Net,        // ±×¹°¸Á
         Count
     }

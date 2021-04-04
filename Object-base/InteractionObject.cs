@@ -12,6 +12,8 @@ public abstract class InteractionObject : MonoBehaviour, IInteraction
     public float durationTime;          // 캐는데 걸리는 시간(소요시간)
     public float growthTime;            // 성장시간(오브젝트가 재생성하는데 걸리는 시간)
 
+                                        // 오브젝트가 다 캐진지 검사가 필요해보임
+
     protected Collider myCollider;
 
     protected virtual void Start() {
