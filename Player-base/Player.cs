@@ -10,11 +10,13 @@ public class Player : MonoBehaviour {
     {
         Idle,
         Walk,
-        Jump
+        Jump,
+        LifeSkill,
     }
 
 
     private StateMachine stateMachine;
+    //private StateMachine LifeStateMachine;
 
     private Dictionary<PlayerState, IState> dicState = new Dictionary<PlayerState, IState>();
 
@@ -71,6 +73,7 @@ public class Player : MonoBehaviour {
             // 만약에 멀리있으면 다가가고
             // 가까이 있으면 바로 채집
             if (nearObject){
+                // 
                 StartCoroutine(PlayerInteraction());
             }
         }
@@ -83,6 +86,7 @@ public class Player : MonoBehaviour {
         v = Input.GetAxisRaw("Vertical");
 
         animator.SetFloat("TimmyMove", new Vector3(h,v).magnitude);
+       // LifeStateMachine.DoOperateUpdate();
     }
     void KeyboardInput()
     {
@@ -124,6 +128,7 @@ public class Player : MonoBehaviour {
         Turn();
     }
     private void OnTriggerEnter(Collider other) {
+        Debug.Log(other);
         // 근처에 있는 오브젝트 판별
         nearObject = other.GetComponent<InteractionObject>();    
     }
@@ -146,7 +151,8 @@ public class Player : MonoBehaviour {
         yield return StartCoroutine(WaitFarmingTime(nearObject.durationTime));
         // 3. 오브젝트 정보 전송
         nearObject.Send();
-
+        // 따로 스폰처리는 나중에
+        Destroy(nearObject);
         isFarming = false;
     }
 
@@ -154,6 +160,7 @@ public class Player : MonoBehaviour {
         float distance = Vector3.Distance(myTransform.position, nearObject.transform.position);
         while(distance > 0.25f){        // 임시로 지정한 거리(0.25f) 근처까지 도달했을 때 실행
             // 임시 이동 코드
+            distance = Vector3.Distance(myTransform.position, nearObject.transform.position);
             Vector3 direction = nearObject.transform.position - myTransform.position;
             myTransform.position += direction.normalized * 3f * Time.deltaTime;
 
@@ -162,13 +169,22 @@ public class Player : MonoBehaviour {
     }
 
     IEnumerator WaitFarmingTime(float durationTime){
+        Debug.Log("나실행했어요");
+        float time = 0;
+        IState lifestate;
+        CheckObjType(out lifestate);
         // 캐릭터 애니메이션을 실행하는 코드 작성 필요
-        Debug.Log("무언가를 하는 중이다...");
+        lifestate.OperateEnter();
 
-        // 플레이어가 오브젝트랑 상호작용하는 코드 필요
+        while(durationTime > time)
+        {
+            lifestate.OperateUpdate();
+            time += 0.01f;
+            yield return new WaitForSeconds(0.01f);
+        }
+        lifestate.OperateExit();
         
-
-        yield return new WaitForSeconds(durationTime);
+    
     }
 
     void InitLifeState()
@@ -200,18 +216,39 @@ public class Player : MonoBehaviour {
         lifeStateDic.Add(LifeType.Kind.Livestock, LiveStockState);
         lifeStateDic.Add(LifeType.Kind.Mining, MiningState);
         lifeStateDic.Add(LifeType.Kind.Woodcutting, WoodCuttingState);
+        // testDic[LifeType.Kind.Woodcutting][WoodcuttingType.Kind.Tree].OperateEnter();
 
-        
+    }
+
+    void CheckObjType(out IState lifestate)
+    {
+        lifestate = null;
         if (nearObject is TreeObject)
         {
-            lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType].OperateEnter();
+            lifestate = lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType];
+            //lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType].OperateEnter();
+            //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType]);
+            // stateMachine.SetState(dicState[PlayerState.Dead]);
         }
         else if(nearObject is PlantObject)
         {
-            lifeStateDic[nearObject.lifeType][(nearObject as PlantObject).farmingType].OperateEnter();
+            //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as PlantObject).farmingType]);
         }
-
-        // testDic[LifeType.Kind.Woodcutting][WoodcuttingType.Kind.Tree].OperateEnter();
-
+        else if(nearObject is FishingAreaObject)
+        {
+            //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as FishingAreaObject).fishingType]);
+        }
+        else if(nearObject is LivestockObject)
+        {
+            //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as LivestockObject).livestockType]);
+        }
+        else if(nearObject is MineralObject)
+        {
+            //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as MineralObject).miningType]);
+        }
+        else
+        {
+            Debug.Log("정의되지 않은 오브젝트 타입입니다.");
+        }
     }
 }
