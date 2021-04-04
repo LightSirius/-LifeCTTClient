@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public class PlantObject : InteractionObject {
-    public FarmingType farmingType;
+    public FarmingType.Kind farmingType;
     
     public override void Send(){
         

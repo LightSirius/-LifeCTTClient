@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public class MineralObject : InteractionObject {
-    public MiningType miningType;
+    public MiningType.Kind miningType;
 
     public override void Send(){
         

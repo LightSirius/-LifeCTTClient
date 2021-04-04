@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,6 +18,9 @@ public class Player : MonoBehaviour {
 
     private Dictionary<PlayerState, IState> dicState = new Dictionary<PlayerState, IState>();
 
+    // TEST용입니다.
+    private Dictionary<LifeType.Kind, Dictionary<Enum, IState>> testDic = new Dictionary<LifeType.Kind, Dictionary<Enum, IState>>();
+
     public bool isFarming = false;      // 생활(채집, 낚시 등)을 하고있을 경우 true 안하고 있을 경우 false
 
     private Transform myTransform;
@@ -32,6 +36,15 @@ public class Player : MonoBehaviour {
         dicState.Add(PlayerState.Idle, idle);
         dicState.Add(PlayerState.Walk, walk);
         dicState.Add(PlayerState.Jump, jump);
+
+        // Dictionary<Enum, IState> woodCuttingState = new Dictionary<Enum, IState>();
+        // woodCuttingState.Add(WoodcuttingType.Kind.FlowerTree, new FlowerTreeState());
+        // woodCuttingState.Add(WoodcuttingType.Kind.Tree, new TreeState());
+
+        // testDic.Add(LifeType.Kind.Woodcutting, woodCuttingState);
+
+        // testDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType].OperateEnter();
+        // testDic[LifeType.Kind.Woodcutting][WoodcuttingType.Kind.Tree].OperateEnter();
 
         // 기본상태는 idle 상태로 설정        
         stateMachine = new StateMachine(idle);    
@@ -104,6 +117,9 @@ public class Player : MonoBehaviour {
     IEnumerator WaitFarmingTime(float durationTime){
         // 캐릭터 애니메이션을 실행하는 코드 작성 필요
         Debug.Log("무언가를 하는 중이다...");
+
+        // 플레이어가 오브젝트랑 상호작용하는 코드 필요
+        
 
         yield return new WaitForSeconds(durationTime);
     }
