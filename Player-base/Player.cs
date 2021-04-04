@@ -5,6 +5,18 @@ using UnityEngine;
 public class Player : MonoBehaviour {
 
 
+    private enum PlayerState
+    {
+        Idle,
+        Walk,
+        Jump
+    }
+
+
+    private StateMachine stateMachine;
+
+    private Dictionary<PlayerState, IState> dicState = new Dictionary<PlayerState, IState>();
+
     public bool isFarming = false;      // 생활(채집, 낚시 등)을 하고있을 경우 true 안하고 있을 경우 false
 
     private Transform myTransform;
@@ -12,13 +24,19 @@ public class Player : MonoBehaviour {
 
     private void Start() {
         myTransform = transform;
-    }
 
-    private void OnDestroy() {
-        myTransform = null;
-    }
+        IState idle = new IdleState();
+        IState walk = new WalkState();
+        IState jump = new JumpState();
 
-    private void Update() {
+        dicState.Add(PlayerState.Idle, idle);
+        dicState.Add(PlayerState.Walk, walk);
+        dicState.Add(PlayerState.Jump, jump);
+
+        // 기본상태는 idle 상태로 설정        
+        stateMachine = new StateMachine(idle);    
+    }
+    void Update() {
         // 키입력
         if (Input.GetKeyDown(KeyCode.G)){
             // 만약에 멀리있으면 다가가고
@@ -27,7 +45,23 @@ public class Player : MonoBehaviour {
                 StartCoroutine(PlayerInteraction());
             }
         }
+
+        KeyboardInput();
+        stateMachine.DoOperateUpdate();
     }
+    void KeyboardInput()
+    {
+
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            // idle상태이거나 Walk상태일때만 점프 가능
+            if(stateMachine.CurrentState == dicState[PlayerState.Idle] || stateMachine.CurrentState == dicState[PlayerState.Walk])
+            {
+                stateMachine.SetState(dicState[PlayerState.Jump]);
+            }
+        }
+    }
+
 
     private void OnTriggerEnter(Collider other) {
         // 근처에 있는 오브젝트 판별
