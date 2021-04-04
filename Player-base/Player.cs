@@ -37,7 +37,7 @@ public class Player : MonoBehaviour {
     private Vector3 movement;
     private Transform camVec; // 카메라 벡터
     private Vector3 camDir; // 카메라가 보는 방향
-    
+    private Animator animator;
     
     private Rigidbody rb;
     private bool isJumping = false;
@@ -62,6 +62,8 @@ public class Player : MonoBehaviour {
         movement = Vector3.zero;
         camVec = GameObject.Find("CameraVector").transform;
         camDir = camVec.localRotation * Vector3.forward; 
+
+        animator = GetComponent<Animator>();
     }
     void Update() {
         // 키입력
@@ -80,7 +82,7 @@ public class Player : MonoBehaviour {
         h = Input.GetAxisRaw("Horizontal");
         v = Input.GetAxisRaw("Vertical");
 
- 
+        animator.SetFloat("TimmyMove", new Vector3(h,v).magnitude);
     }
     void KeyboardInput()
     {
