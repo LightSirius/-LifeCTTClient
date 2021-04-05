@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour {
 
-
+//플레이어 스크립트
     private enum PlayerState
     {
         Idle,
