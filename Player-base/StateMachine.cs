@@ -17,7 +17,7 @@ public class StateMachine
     {
         if(CurrentState == state)
         {
-            Debug.Log("현재 이미 그 상태입니다. ^_^ ");
+            Debug.Log("같은 상태 입니다.");
             return;
         }
         

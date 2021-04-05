@@ -17,6 +17,7 @@ public class Player : MonoBehaviour {
 
     private StateMachine stateMachine;
     //private StateMachine LifeStateMachine;
+    private Status status;
 
     private Dictionary<PlayerState, IState> dicState = new Dictionary<PlayerState, IState>();
 
@@ -43,6 +44,12 @@ public class Player : MonoBehaviour {
     
     private Rigidbody rb;
     private bool isJumping = false;
+
+
+    private void Awake() {
+                
+    }
+
     private void Start() {
 
         myTransform = transform;
@@ -90,8 +97,15 @@ public class Player : MonoBehaviour {
     }
     void KeyboardInput()
     {
-          
+
+        //test
+          if(Input.GetKeyDown(KeyCode.L))
+          {
+              status.GetExp();
+              Debug.Log("현재 경험치 :" + status.currentExp +"현재 레벨 :"+status.current_Level);
+          }
     }
+
     void Move()
     {
         movement.Set(h, 0, v);
