@@ -44,10 +44,10 @@ public class Player : MonoBehaviour {
     
     private Rigidbody rb;
     private bool isJumping = false;
-
+    private bool isGround = false;
 
     private void Awake() {
-                
+                rb = GetComponent<Rigidbody>();
     }
 
     private void Start() {
@@ -88,8 +88,14 @@ public class Player : MonoBehaviour {
         KeyboardInput();
         stateMachine.DoOperateUpdate();
 
+        
         h = Input.GetAxisRaw("Horizontal");
         v = Input.GetAxisRaw("Vertical");
+
+        if(Input.GetButtonDown("Jump") && isGround)
+        {
+            isJumping = true;
+        }
 
         animator.SetFloat("TimmyMove", new Vector3(h,v).magnitude);
        // LifeStateMachine.DoOperateUpdate();
@@ -105,8 +111,6 @@ public class Player : MonoBehaviour {
 
     void Move()
     {
-        movement.Set(h, 0, v);
-
         if (h == 0 && v == 0)
         {
             // 멈출때 IdleState로 변환
@@ -142,8 +146,23 @@ public class Player : MonoBehaviour {
     private void FixedUpdate() 
     {
         Move();
-        Turn();
+        if(isGround)
+        {
+            Turn();
+        }
     }
+
+    
+    private void OnCollisionEnter(Collision col)
+    {
+        if(col.gameObject.tag == "Ground")
+        {
+            isGround = true;
+        }
+        else
+            isGround = false;
+    }
+
     private void OnTriggerEnter(Collider other) {
         Debug.Log(other);
         // 근처에 있는 오브젝트 판별
