@@ -16,8 +16,6 @@ public class Status
     //레벨업에 필요한 경험치
     public int levelUpExp = 100;    
 
-    // 경험치 획득량
-    public int lifeExp = 40;
 
     private void Start()
     {        
@@ -28,7 +26,7 @@ public class Status
         current_Level++;
         maxExp.Add(levelUpExp+50);
     }
-    public void GetExp()
+    public void GetExp(int lifeExp)
     {
         currentExp += lifeExp;
 
