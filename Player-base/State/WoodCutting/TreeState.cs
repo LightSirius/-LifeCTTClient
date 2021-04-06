@@ -11,7 +11,6 @@ public class TreeState : IState
 
     public void OperateExit()
     {
-        // 애니메이션 종료
         UIMgr.Instance.LifeProgressBar.gameObject.SetActive(false);
         UIMgr.Instance.LifeInfoText.text = " ";
         Debug.Log("나무 캐기를 종료합니다.");
