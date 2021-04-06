@@ -1,10 +1,11 @@
 using UnityEngine;
+using LifeContent;
 
 [RequireComponent(typeof(SphereCollider))]
 public abstract class InteractionObject : MonoBehaviour, IInteraction
 {
-    public LifeType.Kind lifeType;
-    public Climate.Kind suitableClimate;     // 적합 기후
+    public LifeType lifeType;
+    public Climate suitableClimate;     // 적합 기후
 
     public int seed;                    // 시드 값
     public int index;                   // 오브젝트 식별값
