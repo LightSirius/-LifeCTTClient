@@ -31,10 +31,11 @@ public class Player : MonoBehaviour {
 
 
 
+    #region  변수 목록
 
     private float h;
     private float v;
-    public float moveSpeed = 10.0f;
+    public float moveSpeed = 5.0f;
     public float rotateSpeed = 5.0f;
   
     private Vector3 movement;
@@ -42,9 +43,19 @@ public class Player : MonoBehaviour {
     private Vector3 camDir; // 카메라가 보는 방향
     private Animator animator;
     
-    private Rigidbody rb;
+    private Rigidbody rb;    
     private bool isJumping = false;
+    public float jumpPower = 800f; 
+    public float forceGravity = 20f;
     private bool isGround = false;
+
+    [SerializeField]
+    private float stamina = 100f;
+    private float recoveryStaminaTime = 0;
+
+
+
+    #endregion
 
     private void Awake() {
                 rb = GetComponent<Rigidbody>();
@@ -92,13 +103,15 @@ public class Player : MonoBehaviour {
         h = Input.GetAxisRaw("Horizontal");
         v = Input.GetAxisRaw("Vertical");
 
-        if(Input.GetButtonDown("Jump") && isGround)
+        if(Input.GetKeyDown(KeyCode.Space) && isGround)
         {
             isJumping = true;
         }
 
         animator.SetFloat("TimmyMove", new Vector3(h,v).magnitude);
        // LifeStateMachine.DoOperateUpdate();
+
+       
     }
     void KeyboardInput()
     {
@@ -111,24 +124,27 @@ public class Player : MonoBehaviour {
 
     void Move()
     {
+        movement.Set(h, 0, v);
         if (h == 0 && v == 0)
         {
             // 멈출때 IdleState로 변환
-            stateMachine.SetState(dicState[PlayerState.Idle]);
+            stateMachine.SetState(dicState[PlayerState.Idle]);            
             return;
         }
         else
         { // 움직일때 WalkState로 변환
             stateMachine.SetState(dicState[PlayerState.Walk]);
             transform.Translate(camDir * moveSpeed * Time.deltaTime);
-
+            
             if (isFarming){
                 StopAllCoroutines();        // 임시로 다 끔
                 isFarming = false;
-                UIMgr.Instance.SetLifeUI(false);        // 나중에 여기서 dictionary의 IState.OperatorExit호출 바람
+                UIMgr.Instance.SetLifeUI(false);        // 나중에 여기서 dictionary의 IState.OperatorExit호출 바람                
             }
         }
+      
     }
+
     
     void Turn()
     {
@@ -141,8 +157,48 @@ public class Player : MonoBehaviour {
         if (movement != Vector3.zero)
             rb.MoveRotation(transform.rotation = newRotation);
     }
+    void Jump()
+    {
+        if(isJumping && isGround)
+        {
+            rb.AddForce(new Vector3(0f, jumpPower, 0f));
+            isGround = false;
+            isJumping = false;
+        }
+        rb.AddForce(Vector3.down * forceGravity);
+    }
+
+    private void Stamina()
+    {
+        if(stamina <= 0) 
+            stamina = 0;
+        if(stamina>=100)
+            stamina = 100;
 
 
+        if(Input.GetKey(KeyCode.LeftShift) && stamina != 0) // 왼쪽 시프트 클릭 시 달리기
+        {
+            recoveryStaminaTime = 0f; // 회복 쿨타임 초기화
+            moveSpeed = 15f; //속도 증가
+            stamina -= 1.5f; // 스테미너 감소           
+        }        
+        else
+        {                        
+            RecoveryStamina(); // 달리는 중 아닐 때 스테미너 회복 함수 실행
+            moveSpeed = 5f; // 이동속도 초기화
+        }
+    }
+    private void RecoveryStamina()
+    {        
+        if(stamina >= 100) // 스태미너가 100일땐 회복쿨타임 0으로 리턴
+        {
+            recoveryStaminaTime = 0;
+            return;
+        }
+        recoveryStaminaTime += Time.fixedDeltaTime; //프레임마다 쿨타임을 올려줌
+        if(recoveryStaminaTime > 3) // 3초이상이 되면 스태미너 회복
+        stamina += 2.5f;
+    }
     private void FixedUpdate() 
     {
         Move();
@@ -150,17 +206,18 @@ public class Player : MonoBehaviour {
         {
             Turn();
         }
+        Jump();
+
+        Stamina();
     }
 
     
     private void OnCollisionEnter(Collision col)
     {
         if(col.gameObject.tag == "Ground")
-        {
+        {                   
             isGround = true;
         }
-        else
-            isGround = false;
     }
 
     private void OnTriggerEnter(Collider other) {
