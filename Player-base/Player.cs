@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour {
 
-//플레이어 스크립트
+    //플레이어 스크립트
     private enum PlayerState
     {
         Idle,
@@ -17,7 +17,7 @@ public class Player : MonoBehaviour {
 
     private StateMachine stateMachine;
     //private StateMachine LifeStateMachine;
-    private Status status;
+    public PlayerStatus playerStatus;
 
     private Dictionary<PlayerState, IState> dicState = new Dictionary<PlayerState, IState>();
 
@@ -88,7 +88,6 @@ public class Player : MonoBehaviour {
         KeyboardInput();
         stateMachine.DoOperateUpdate();
 
-        rb = GetComponent<Rigidbody>();
         h = Input.GetAxisRaw("Horizontal");
         v = Input.GetAxisRaw("Vertical");
 
@@ -97,12 +96,10 @@ public class Player : MonoBehaviour {
     }
     void KeyboardInput()
     {
-
         //test
           if(Input.GetKeyDown(KeyCode.L))
           {
-              status.GetExp();
-              Debug.Log("현재 경험치 :" + status.currentExp +"현재 레벨 :"+status.current_Level);
+              
           }
     }
 

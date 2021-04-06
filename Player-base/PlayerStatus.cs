@@ -5,6 +5,4 @@ using UnityEngine;
 public class PlayerStatus 
 {
     public Dictionary<LifeType.Kind,Status> lvdicState = new Dictionary<LifeType.Kind, Status>();
-
-
 }
