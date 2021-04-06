@@ -144,10 +144,11 @@ public class Player : MonoBehaviour {
         nearObject = null;
     }
 
+
     // 코루틴으로 루틴 생성
     // 멀리있으면 -> 가까이 가는 것
     // 오브젝트 캐는 이벤트 실행
-    IEnumerator PlayerInteraction(){
+    public IEnumerator PlayerInteraction(){
         // 플레이어가 chunk매니저에게 허락을 받아야함.
         if (!isFarming){
             isFarming = true;              // 나중에 chunkManager에 허락을 받는 코드로 바꾸기
@@ -159,7 +160,6 @@ public class Player : MonoBehaviour {
             // 3. 오브젝트 정보 전송
             nearObject.Send();
             // 따로 스폰처리는 나중에
-            Destroy(nearObject);
             isFarming = false;
         }
     }
@@ -180,8 +180,11 @@ public class Player : MonoBehaviour {
         Debug.Log("나실행했어요");
         float time = 0;
         IState lifestate;
+        // lifestate를 알아옴
+        // 나무 중 나무를 벨건지 나무의 열매를 딸건지 물어봐야 함
+        // 물어본 값을 interface가 가져가야함 
         CheckObjType(out lifestate);
-        // 캐릭터 애니메이션을 실행하는 코드 작성 필요
+        // 
         lifestate.OperateEnter();
 
         while(durationTime > time)
