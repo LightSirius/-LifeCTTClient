@@ -1,7 +1,8 @@
 using UnityEngine;
+using LifeContent;
 
 public class FishingAreaObject : InteractionObject {
-    public FishingType.Kind fishingType;
+    public FishingType fishingType;
     public override void Send(){
         
     }

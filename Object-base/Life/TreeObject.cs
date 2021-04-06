@@ -1,8 +1,9 @@
 using UnityEngine;
+using LifeContent;
 
 public class TreeObject : InteractionObject
 {
-    public WoodcuttingType.Kind woodcuttingType;
+    public WoodcuttingType woodcuttingType;
     // 꽃이나 열매가 맺히는 시간
     public float respawnTime;
 

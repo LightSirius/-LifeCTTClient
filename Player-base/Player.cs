@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using LifeContent;
 
 public class Player : MonoBehaviour {
 
@@ -21,7 +22,7 @@ public class Player : MonoBehaviour {
     private Dictionary<PlayerState, IState> dicState = new Dictionary<PlayerState, IState>();
 
     // 생활종류 - 세부종류가 뭔지 
-    private Dictionary<LifeType.Kind, Dictionary<Enum, IState>> lifeStateDic = new Dictionary<LifeType.Kind, Dictionary<Enum, IState>>();
+    private Dictionary<LifeType, Dictionary<Enum, IState>> lifeStateDic = new Dictionary<LifeType, Dictionary<Enum, IState>>();
 
     public bool isFarming = false;      // 생활(채집, 낚시 등)을 하고있을 경우 true 안하고 있을 경우 false
 
@@ -203,28 +204,28 @@ public class Player : MonoBehaviour {
         Dictionary<Enum, IState> MiningState = new Dictionary<Enum, IState>();
         Dictionary<Enum, IState> WoodCuttingState = new Dictionary<Enum, IState>();
         
-        FarmingState.Add(FarmingType.Kind.GroundPlant, new GroundState());
-        FarmingState.Add(FarmingType.Kind.UnderGroundPlant, new UnGroundState());
+        FarmingState.Add(FarmingType.GroundPlant, new GroundState());
+        FarmingState.Add(FarmingType.UnderGroundPlant, new UnGroundState());
 
-        FishingState.Add(FishingType.Kind.Rod, new RodState());
-        FishingState.Add(FishingType.Kind.Net, new NetState());
+        FishingState.Add(FishingType.Rod, new RodState());
+        FishingState.Add(FishingType.Net, new NetState());
 
-        LiveStockState.Add(LivestockType.Kind.Meat, new MeatState());
-        LiveStockState.Add(LivestockType.Kind.Leather, new LeatherState());
-        LiveStockState.Add(LivestockType.Kind.ByProduct, new ByProductState());
+        LiveStockState.Add(LivestockType.Meat, new MeatState());
+        LiveStockState.Add(LivestockType.Leather, new LeatherState());
+        LiveStockState.Add(LivestockType.ByProduct, new ByProductState());
 
-        MiningState.Add(MiningType.Kind.Pick, new PickState());
+        MiningState.Add(MiningType.Pick, new PickState());
 
-        WoodCuttingState.Add(WoodcuttingType.Kind.Tree, new TreeState());
-        WoodCuttingState.Add(WoodcuttingType.Kind.FruitTree, new FruitTreeState());
-        WoodCuttingState.Add(WoodcuttingType.Kind.FlowerTree, new FlowerTreeState());
+        WoodCuttingState.Add(WoodcuttingType.Tree, new TreeState());
+        WoodCuttingState.Add(WoodcuttingType.FruitTree, new FruitTreeState());
+        WoodCuttingState.Add(WoodcuttingType.FlowerTree, new FlowerTreeState());
 
-        lifeStateDic.Add(LifeType.Kind.Farming, FarmingState);
-        lifeStateDic.Add(LifeType.Kind.Fishing, FishingState);
-        lifeStateDic.Add(LifeType.Kind.Livestock, LiveStockState);
-        lifeStateDic.Add(LifeType.Kind.Mining, MiningState);
-        lifeStateDic.Add(LifeType.Kind.Woodcutting, WoodCuttingState);
-        // testDic[LifeType.Kind.Woodcutting][WoodcuttingType.Kind.Tree].OperateEnter();
+        lifeStateDic.Add(LifeType.Farming, FarmingState);
+        lifeStateDic.Add(LifeType.Fishing, FishingState);
+        lifeStateDic.Add(LifeType.Livestock, LiveStockState);
+        lifeStateDic.Add(LifeType.Mining, MiningState);
+        lifeStateDic.Add(LifeType.Woodcutting, WoodCuttingState);
+        // testDic[LifeType.Woodcutting][WoodcuttingType.Tree].OperateEnter();
 
     }
 
