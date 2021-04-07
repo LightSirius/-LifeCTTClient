@@ -1,8 +1,7 @@
 using UnityEngine;
 using LifeContent;
 
-public class LivestockObject : InteractionObject {
-    public LivestockType livestockType;
+public class LivestockObject : InteractionObject<LivestockType> {
     public override void Send(){
         
     }

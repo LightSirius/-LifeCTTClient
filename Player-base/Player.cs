@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using LifeContent;
+using Anim;
 
 public class Player : MonoBehaviour {
 
@@ -15,7 +16,7 @@ public class Player : MonoBehaviour {
         LifeSkill,
     }
 
-
+    private PlayerAnimController playerAnimController;
     private StateMachine stateMachine;
     //private StateMachine LifeStateMachine;
     public PlayerStatus playerStatus;
@@ -57,7 +58,8 @@ public class Player : MonoBehaviour {
     #endregion
 
     private void Awake() {
-                rb = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
+        playerAnimController = GetComponent<PlayerAnimController>();
     }
 
     private void Start() {
@@ -79,7 +81,7 @@ public class Player : MonoBehaviour {
 
     
         movement = Vector3.zero;
-        camVec = GameObject.Find("CameraVector").transform;
+        camVec = Camera.main.transform;
         camDir = camVec.localRotation * Vector3.forward; 
 
         animator = GetComponent<Animator>();
@@ -98,6 +100,19 @@ public class Player : MonoBehaviour {
         KeyboardInput();
         stateMachine.DoOperateUpdate();
 
+
+        // Animation Test Start
+        // -----------------------------------
+        playerAnimController.UpdateMove(new Vector3(h, v));
+
+        if (isFarming && playerAnimController.Current_State == PlayerAnimState.Move){
+            Debug.Log("??");
+            playerAnimController.ChangeState(PlayerAnimState.Exit);
+            StopAllCoroutines();
+        }
+        // -----------------------------------
+        // Animation Test End
+
         
         h = Input.GetAxisRaw("Horizontal");
         v = Input.GetAxisRaw("Vertical");
@@ -107,11 +122,11 @@ public class Player : MonoBehaviour {
             isJumping = true;
         }
 
-        animator.SetFloat("TimmyMove", new Vector3(h,v).magnitude);
+        // animator.SetFloat("TimmyMove", new Vector3(h,v).magnitude);
        // LifeStateMachine.DoOperateUpdate();  
     }
 
-        private void FixedUpdate() 
+    private void FixedUpdate() 
     {
         Move();
         Turn();        
@@ -208,7 +223,7 @@ public class Player : MonoBehaviour {
 
     private void OnTriggerExit(Collider other) {
         // 근처에 있는 오브젝트 해제
-        nearObject = null;
+        // nearObject = null;
     }
 
     // 코루틴으로 루틴 생성
@@ -217,7 +232,7 @@ public class Player : MonoBehaviour {
     IEnumerator PlayerInteraction(){
         // 플레이어가 chunk매니저에게 허락을 받아야함.
         if (!isFarming){
-            isFarming = true;              // 나중에 chunkManager에 허락을 받는 코드로 바꾸기
+            
 
             // 1. 근처오브젝트로 다가감
             yield return StartCoroutine(MoveToNearObject());
@@ -226,8 +241,8 @@ public class Player : MonoBehaviour {
             // 3. 오브젝트 정보 전송
             nearObject.Send();
             // 따로 스폰처리는 나중에
-            Destroy(nearObject);
-            isFarming = false;
+            // Destroy(nearObject);
+            
         }
     }
 
@@ -237,6 +252,13 @@ public class Player : MonoBehaviour {
             // 임시 이동 코드
             distance = Vector3.Distance(myTransform.position, nearObject.transform.position);
             Vector3 direction = nearObject.transform.position - myTransform.position;
+
+            // Animation Test Start
+            // -----------------------------------
+            playerAnimController.UpdateMove(direction, false);
+            // -----------------------------------
+            // Animation Test End
+
             myTransform.position += direction.normalized * 3f * Time.deltaTime;
 
             yield return null;
@@ -244,12 +266,17 @@ public class Player : MonoBehaviour {
     }
 
     IEnumerator WaitFarmingTime(float durationTime){
-        Debug.Log("나실행했어요");
+        isFarming = true;              // 나중에 chunkManager에 허락을 받는 코드로 바꾸기
+        // Debug.Log("나실행했어요");
         float time = 0;
         IState lifestate;
         CheckObjType(out lifestate);
         // 캐릭터 애니메이션을 실행하는 코드 작성 필요
-        lifestate.OperateEnter();
+        // lifestate.OperateEnter();
+
+        // Animation Test Start
+        // -----------------------------------
+        playerAnimController.ChangeState(PlayerAnimController.GetLifeTypeToPlayerAnimState(FishingType.Rod));
 
         while(durationTime > time)
         {
@@ -257,9 +284,15 @@ public class Player : MonoBehaviour {
             time += 0.01f;
             yield return new WaitForSeconds(0.01f);
         }
-        lifestate.OperateExit();
-        
-    
+
+        playerAnimController.ChangeState(PlayerAnimState.Fishing_Rod_End);
+
+        yield return new WaitForSeconds(5f);
+
+        playerAnimController.ChangeState(PlayerAnimState.Exit);
+        // lifestate.OperateExit();
+
+        isFarming = false;
     }
 
     void InitLifeState()
