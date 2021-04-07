@@ -37,7 +37,7 @@ public class Player : MonoBehaviour {
     private float h;
     private float v;
     public float moveSpeed = 5.0f;
-    public float rotateSpeed = 5.0f;
+    private float rotateSpeed = 15.0f;
   
     private Vector3 movement;
     private Transform camVec; // 카메라 벡터
@@ -53,8 +53,6 @@ public class Player : MonoBehaviour {
     [SerializeField]
     private float stamina = 100f;
     private float recoveryStaminaTime = 0;
-
-
 
     #endregion
 
@@ -110,10 +108,17 @@ public class Player : MonoBehaviour {
         }
 
         animator.SetFloat("TimmyMove", new Vector3(h,v).magnitude);
-       // LifeStateMachine.DoOperateUpdate();
-
-       
+       // LifeStateMachine.DoOperateUpdate();  
     }
+
+        private void FixedUpdate() 
+    {
+        Move();
+        Turn();        
+        Jump();
+        Stamina();
+    }
+
     void KeyboardInput()
     {
         //test
@@ -124,39 +129,24 @@ public class Player : MonoBehaviour {
     }
 
     void Move()
-    {
-        movement.Set(h, 0, v);
-        if (h == 0 && v == 0)
-        {
-            // 멈출때 IdleState로 변환
-            stateMachine.SetState(dicState[PlayerState.Idle]);            
-            return;
-        }
-        else
-        { // 움직일때 WalkState로 변환
-            stateMachine.SetState(dicState[PlayerState.Walk]);
-            transform.Translate(camDir * moveSpeed * Time.deltaTime);
-            
-            if (isFarming){
-                StopAllCoroutines();        // 임시로 다 끔
-                isFarming = false;
-                UIMgr.Instance.SetLifeUI(false);        // 나중에 여기서 dictionary의 IState.OperatorExit호출 바람                
-            }
-        }
-      
+    {        
+        movement.Set(h ,0, v);
+        Vector3 moveHorizontal = camVec.right * h;
+        Vector3 moveVertical = camVec.forward * v;
+
+        Vector3 velocity = (moveHorizontal + moveVertical).normalized * moveSpeed;
+
+        rb.MovePosition(transform.position + velocity * Time.deltaTime);   
     }
 
     
     void Turn()
     {
-        if (h == 0 && v == 0) // 가만히 있을 땐 회전되지 못하게 막아두는 것
-            return;
+        if(h == 0 && v == 0)
+           return;
+
         Quaternion newRotation = Quaternion.LookRotation(camVec.TransformDirection(movement));
-
         rb.rotation = Quaternion.Slerp(rb.rotation, newRotation, rotateSpeed * Time.deltaTime);
-
-        if (movement != Vector3.zero)
-            rb.MoveRotation(transform.rotation = newRotation);
     }
     void Jump()
     {
@@ -199,17 +189,6 @@ public class Player : MonoBehaviour {
         recoveryStaminaTime += Time.fixedDeltaTime; //프레임마다 쿨타임을 올려줌
         if(recoveryStaminaTime > 3) // 3초이상이 되면 스태미너 회복
         stamina += 2.5f;
-    }
-    private void FixedUpdate() 
-    {
-        Move();
-        if(isGround)
-        {
-            Turn();
-        }
-        Jump();
-
-        Stamina();
     }
 
     
