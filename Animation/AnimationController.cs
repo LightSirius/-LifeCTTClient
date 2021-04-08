@@ -14,6 +14,7 @@ namespace Anim{
     }
 
     // T는 무조건 state가 와야 함
+    [RequireComponent(typeof(Animator))]
     public abstract class AnimationController<T> : MonoBehaviour
     {
         [Tooltip("플레이어 애니메이션 정보")]

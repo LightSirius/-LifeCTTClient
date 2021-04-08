@@ -18,6 +18,7 @@ namespace Anim{
         Livestock_Meat,
         Livestock_Milk,
         Fishing_Rod_Start,
+        Fishing_Rod_Idle,
         Fishing_Rod_End
     }
 
@@ -36,14 +37,37 @@ namespace Anim{
         public static PlayerAnimState GetLifeTypeToPlayerAnimState(Enum life){
             PlayerAnimState state = PlayerAnimState.Exit;
 
-            if (life is FishingType){
-                Debug.Log("물고기 잡힘");
-                state = PlayerAnimState.Fishing_Rod_Start;
-            }
-            if (life is FarmingType){
-                Debug.Log("풀이 캐짐");
-
-                state = PlayerAnimState.Farming_Ground;
+            switch(life){
+                case WoodcuttingType.Tree:
+                    // 현재 애니메이션이  존재하지 않음
+                    break;
+                case WoodcuttingType.FruitTree:
+                    state = PlayerAnimState.Woodcutting_Fruit;
+                    break;
+                case WoodcuttingType.FlowerTree:
+                    state = PlayerAnimState.Woodcutting_Flower;
+                    break;
+                case FishingType.Rod:
+                    state = PlayerAnimState.Fishing_Rod_Start;
+                    break;
+                case FishingType.Net:
+                    // 현재 애니메이션이  존재하지 않음
+                    break;
+                case FarmingType.GroundPlant:
+                    state = PlayerAnimState.Farming_Ground;
+                    break;
+                case FarmingType.UnderGroundPlant:
+                    state = PlayerAnimState.Farming_Underground;
+                    break;
+                case LivestockType.Meat:
+                    state = PlayerAnimState.Livestock_Meat;
+                    break;
+                case LivestockType.Leather:
+                    state = PlayerAnimState.Livestock_Leather;
+                    break;
+                case LivestockType.ByProduct:
+                    state = PlayerAnimState.Livestock_Milk;
+                    break;
             }
 
             return state;
@@ -75,12 +99,7 @@ namespace Anim{
 
         // 플레이어 움직일때마다 이 함수 실행 필요
         public void UpdateMove(Vector3 value){
-            current_state = PlayerAnimState.Move;
-            parameterActions[moveInfo.parmeterType](moveInfo.stateName, value.normalized.magnitude);
-        }
-
-        public void UpdateMove(Vector3 value, bool changeState){
-            if (changeState){
+            if (current_state != PlayerAnimState.Move){
                 current_state = PlayerAnimState.Move;
             }
             parameterActions[moveInfo.parmeterType](moveInfo.stateName, value.normalized.magnitude);
