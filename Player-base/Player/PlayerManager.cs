@@ -6,7 +6,7 @@ public class PlayerManager : MonoBehaviour
 {    
 
     public PlayerMovement playerMovement;
-
+    private PlayerLifeForce PlayerLifeForce;
     private float horizontal_Move;
     private float vertical_Move;
 
@@ -17,6 +17,7 @@ public class PlayerManager : MonoBehaviour
     void Start()
     {
         playerMovement = GetComponent<PlayerMovement>();
+        PlayerLifeForce = GetComponent<PlayerLifeForce>();
     }
 
     void Update()
@@ -28,6 +29,17 @@ public class PlayerManager : MonoBehaviour
 
         jumping = Input.GetAxisRaw("Jump");    
         playerMovement.Jump(jumping);
+
+        if(Input.GetKeyDown(KeyCode.F)) // 피로도 감소 테스트
+        {
+            PlayerLifeForce.DecreaseFatigue();
+        }
+    }
+    private void FixedUpdate() 
+    {
+        playerMovement.Turn();
+        playerMovement.Stamina();
+        PlayerLifeForce.Fatigue();
     }
     
 }

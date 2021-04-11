@@ -9,11 +9,13 @@ public class PlayerMovement : MonoBehaviour
 
     #region 변수 목록
 
+    [Header("이동 속도")]
     public float moveSpeed = 0f;
     private float rotateSpeed = 15.0f;
     private float jumpPower = 800f; 
     private float forceGravity = 20f;
 
+    [Header ("스태미나")]
     [SerializeField]
     private float stamina = 100f;
     private float recoveryStaminaTime = 0;
@@ -49,11 +51,16 @@ public class PlayerMovement : MonoBehaviour
     private void Update() 
     {
         KeyboardInput();
+
+        if(horizontal_Move == 0 && vertical_Move == 0)
+        {
+            rigid_player.velocity = new Vector3(0,0,0);
+        }
     }
     private void FixedUpdate()
     {        
-        Turn();        
-        Stamina();
+        //Turn();        
+        //Stamina();
     }
     #endregion
     void KeyboardInput()
@@ -100,7 +107,7 @@ public class PlayerMovement : MonoBehaviour
         rigid_player.AddForce(Vector3.down * forceGravity);
     }
 
-       private void Stamina()
+    public void Stamina()
     {
         if(stamina <= 0) 
             stamina = 0;
@@ -108,8 +115,7 @@ public class PlayerMovement : MonoBehaviour
             stamina = 100;
 
 
-        if(velocity.x != 0 || velocity.z != 0 && stamina != 0 ) // "멈춰!" 있을 때만 
-        {
+        if(velocity.x != 0 || velocity.z != 0 && stamina != 0)        {
             recoveryStaminaTime = 0f; // 회복 쿨타임 초기화
             moveSpeed = 15f; //속도 증가
             if(stamina > 0)
