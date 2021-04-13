@@ -1,8 +1,7 @@
 using UnityEngine;
 using LifeContent;
 
-public class PlantObject : InteractionObject {
-    public FarmingType farmingType;
+public class PlantObject : InteractionObject<FarmingType> {
     
     public override void Send(){
         

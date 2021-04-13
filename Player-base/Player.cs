@@ -1,296 +1,107 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using LifeContent;
+using Anim;
+using Manager;
 
-public class Player : MonoBehaviour {
-
-    //플레이어 스크립트
-    private enum PlayerState
-    {
-        Idle,
-        Walk,
-        Jump,
-        LifeSkill,
+namespace Player{
+    public enum PlayerState{
+        Move,
+        Skill,
+        Gesture
     }
 
+    // Player script
+    // 역할 : player status, player animation, player life skill 을 관리
+    [RequireComponent(typeof(PlayerMovement))]
+    public class Player : MonoBehaviour {
 
-    private StateMachine stateMachine;
-    //private StateMachine LifeStateMachine;
-    public PlayerStatus playerStatus;
+        private IInteraction nearInteractionObject = null; // 상호작용 오브젝트 (채집 가능한 오브젝트)
+        private PlayerMovement playerMovement;      // 플레이어 움직이기, 점프
+        private PlayerStatus playerStatus;          // 생활 스테이터스
+        private PlayerState playerState;            // 플레이어 현재 상태
 
-    private Dictionary<PlayerState, IState> dicState = new Dictionary<PlayerState, IState>();
+        // 애니메이션 스크립트 추가 바람
 
-    // 생활종류 - 세부종류가 뭔지 
-    private Dictionary<LifeType, Dictionary<Enum, IState>> lifeStateDic = new Dictionary<LifeType, Dictionary<Enum, IState>>();
+        // Life Skill 스크립트 추가 바람
 
-    public bool isFarming = false;      // 생활(채집, 낚시 등)을 하고있을 경우 true 안하고 있을 경우 false
+        private void Start() {
+            
+        }
 
-    private Transform myTransform;
-    public InteractionObject nearObject;
+        private void OnEnable() {
+            // PlayerMovement 추가 후 주석 해제 바람
+            // InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Move);
+            // InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Turn);
+            InputManager.Instance.arrowKeyEvent.AddListener(CheckMove);
+            InputManager.Instance.AddKeyDownListenr(KeyCode.G, DoSkill);
+        }
 
+        private void OnDisable() {
+            // PlayerMovement 추가 후 주석 해제 바람
+            // InputManager.Instance.arrowKeyEvent.RemoveListener(playerMovement.Move);
+            // InputManager.Instance.arrowKeyEvent.RemoveListener(playerMovement.Turn);
+            InputManager.Instance.arrowKeyEvent.RemoveListener(CheckMove);
+            InputManager.Instance.RemoveKeyDownListenr(KeyCode.G, DoSkill);
+        }
 
+        private void OnTriggerEnter(Collider other) {
+            if (nearInteractionObject == null){
+                nearInteractionObject = other.GetComponent<IInteraction>();
 
-
-    private float h;
-    private float v;
-    public float moveSpeed = 10.0f;
-    public float rotateSpeed = 5.0f;
-  
-    private Vector3 movement;
-    private Transform camVec; // 카메라 벡터
-    private Vector3 camDir; // 카메라가 보는 방향
-    private Animator animator;
-    
-    private Rigidbody rb;
-    private bool isJumping = false;
-    private bool isGround = false;
-
-    private void Awake() {
-                rb = GetComponent<Rigidbody>();
-    }
-
-    private void Start() {
-
-        myTransform = transform;
-
-        IState idle = new IdleState();
-        IState walk = new WalkState();
-        IState jump = new JumpState();
-
-        dicState.Add(PlayerState.Idle, idle);
-        dicState.Add(PlayerState.Walk, walk);
-        dicState.Add(PlayerState.Jump, jump);
-
-        //InitLifeState();
-        
-        // 기본상태는 idle 상태로 설정        
-        stateMachine = new StateMachine(idle);   
-
-    
-        movement = Vector3.zero;
-        camVec = GameObject.Find("CameraVector").transform;
-        camDir = camVec.localRotation * Vector3.forward; 
-
-        animator = GetComponent<Animator>();
-    }
-    void Update() {
-        // 키입력
-        if (Input.GetKeyDown(KeyCode.G)){
-            // 만약에 멀리있으면 다가가고
-            // 가까이 있으면 바로 채집
-            if (nearObject){
-                // 
-                // StartCoroutine(PlayerInteraction());
+                if (!nearInteractionObject.IsEnable){
+                    nearInteractionObject = null;
+                    return;
+                }
+                
+                // Life UI 창 띄우기
             }
         }
 
-        KeyboardInput();
-        stateMachine.DoOperateUpdate();
+        private void OnTriggerStay(Collider other) {
+            if (nearInteractionObject == null){
+                nearInteractionObject = other.GetComponent<IInteraction>();
 
-        
-        h = Input.GetAxisRaw("Horizontal");
-        v = Input.GetAxisRaw("Vertical");
+                if (!nearInteractionObject.IsEnable){
+                    nearInteractionObject = null;
+                    return;
+                }
 
-        if(Input.GetButtonDown("Jump") && isGround)
-        {
-            isJumping = true;
+                // Life UI창 띄우기
+            }
         }
 
-        animator.SetFloat("TimmyMove", new Vector3(h,v).magnitude);
-       // LifeStateMachine.DoOperateUpdate();
-    }
-    void KeyboardInput()
-    {
-        //test
-          if(Input.GetKeyDown(KeyCode.L))
-          {
-              
-          }
-    }
+        private void OnTriggerExit(Collider other) {
+            if (nearInteractionObject != null){
+                nearInteractionObject = null;       // 플레이어가 인식하고있던 interaction Object 해제
 
-    void Move()
-    {
-        if (h == 0 && v == 0)
-        {
-            // 멈출때 IdleState로 변환
-            stateMachine.SetState(dicState[PlayerState.Idle]);
-            return;
+                // Life UI창 해제
+            }
         }
-        else
-        { // 움직일때 WalkState로 변환
-            stateMachine.SetState(dicState[PlayerState.Walk]);
-            transform.Translate(camDir * moveSpeed * Time.deltaTime);
 
-            if (isFarming){
-                StopAllCoroutines();        // 임시로 다 끔
-                isFarming = false;
-                UIMgr.Instance.SetLifeUI(false);        // 나중에 여기서 dictionary의 IState.OperatorExit호출 바람
+        // 플레이어가 움직일때 스킬 사용 및 애니메이션을 종료하는 함수
+        // InputManager 이벤트에 OnEnable시 등록함
+        // OnDisable시 이벤트 등록 해제
+        private void CheckMove(Vector2 direction){
+            if (direction.SqrMagnitude() > 0f && playerState == PlayerState.Skill){
+                // 애니메이션 종료 스크립트 작성 필요
+
+                // 현재 사용중인 스킬 종료 스크립트 작성 필요
+                // UI 초기화 함수 실행
+            }
+
+            playerState = PlayerState.Move;
+        }
+
+        private void DoSkill(){
+            if (nearInteractionObject != null && nearInteractionObject.IsEnable && playerState != PlayerState.Skill){
+                playerState = PlayerState.Skill;
+                // 생활 스킬
+                // 1. nearObject안에 있는 type을 가져와서 씀
+
+                // 2. 애니메이션 실행
             }
         }
     }
-    
-    void Turn()
-    {
-        if (h == 0 && v == 0) // 가만히 있을 땐 회전되지 못하게 막아두는 것
-            return;
-        Quaternion newRotation = Quaternion.LookRotation(camVec.TransformDirection(movement));
-
-        rb.rotation = Quaternion.Slerp(rb.rotation, newRotation, rotateSpeed * Time.deltaTime);
-
-        if (movement != Vector3.zero)
-            rb.MoveRotation(transform.rotation = newRotation);
-    }
-
-
-    private void FixedUpdate() 
-    {
-        Move();
-        if(isGround)
-        {
-            Turn();
-        }
-    }
-
-    
-    private void OnCollisionEnter(Collision col)
-    {
-        if(col.gameObject.tag == "Ground")      // 그라운드 태그를 가지고 있는 오브젝트와 충돌하면 true
-        {
-            isGround = true;
-        }
-        else                                // 그 외의 오브젝트와 충돌했으면 false
-            isGround = false;
-    }
-
-    // private void OnTriggerEnter(Collider other) {
-    //     Debug.Log(other);
-    //     // 근처에 있는 오브젝트 판별
-    //     nearObject = other.GetComponent<InteractionObject>();    
-    // }
-
-    // private void OnTriggerExit(Collider other) {
-    //     // 근처에 있는 오브젝트 해제
-    //     nearObject = null;
-    // }
-
-
-    // 코루틴으로 루틴 생성
-    // 멀리있으면 -> 가까이 가는 것
-    // 오브젝트 캐는 이벤트 실행
-    // public IEnumerator PlayerInteraction(){
-    //     // 플레이어가 chunk매니저에게 허락을 받아야함.
-    //     if (!isFarming){
-    //         isFarming = true;              // 나중에 chunkManager에 허락을 받는 코드로 바꾸기
-
-    //         // 1. 근처오브젝트로 다가감
-    //         yield return StartCoroutine(MoveToNearObject());
-    //         // 2. 캐는 애니메이션 실행 및 UI 켜기
-    //         yield return StartCoroutine(WaitFarmingTime(nearObject.durationTime));
-    //         // 3. 오브젝트 정보 전송
-    //         nearObject.Send();
-    //         // 따로 스폰처리는 나중에
-    //         isFarming = false;
-    //     }
-    // }
-
-    // IEnumerator MoveToNearObject(){
-    //     float distance = Vector3.Distance(myTransform.position, nearObject.transform.position);
-    //     while(distance > 0.25f){        // 임시로 지정한 거리(0.25f) 근처까지 도달했을 때 실행
-    //         // 임시 이동 코드
-    //         distance = Vector3.Distance(myTransform.position, nearObject.transform.position);
-    //         Vector3 direction = nearObject.transform.position - myTransform.position;
-    //         myTransform.position += direction.normalized * 3f * Time.deltaTime;
-
-    //         yield return null;
-    //     }
-    // }
-
-    // IEnumerator WaitFarmingTime(float durationTime){
-    //     Debug.Log("나실행했어요");
-    //     float time = 0;
-    //     IState lifestate;
-    //     // lifestate를 알아옴
-    //     // 나무 중 나무를 벨건지 나무의 열매를 딸건지 물어봐야 함
-    //     // 물어본 값을 interface가 가져가야함 
-    //     CheckObjType(out lifestate);
-    //     // 
-    //     lifestate.OperateEnter();
-
-    //     while(durationTime > time)
-    //     {
-    //         lifestate.OperateUpdate();
-    //         time += 0.01f;
-    //         yield return new WaitForSeconds(0.01f);
-    //     }
-    //     lifestate.OperateExit();
-        
-    
-    // }
-
-    // void InitLifeState()
-    // {
-    //     Dictionary<Enum, IState> FarmingState = new Dictionary<Enum, IState>();
-    //     Dictionary<Enum, IState> FishingState = new Dictionary<Enum, IState>();
-    //     Dictionary<Enum, IState> LiveStockState = new Dictionary<Enum, IState>();
-    //     Dictionary<Enum, IState> MiningState = new Dictionary<Enum, IState>();
-    //     Dictionary<Enum, IState> WoodCuttingState = new Dictionary<Enum, IState>();
-        
-    //     FarmingState.Add(FarmingType.GroundPlant, new GroundState());
-    //     FarmingState.Add(FarmingType.UnderGroundPlant, new UnGroundState());
-
-    //     FishingState.Add(FishingType.Rod, new RodState());
-    //     FishingState.Add(FishingType.Net, new NetState());
-
-    //     LiveStockState.Add(LivestockType.Meat, new MeatState());
-    //     LiveStockState.Add(LivestockType.Leather, new LeatherState());
-    //     LiveStockState.Add(LivestockType.ByProduct, new ByProductState());
-
-    //     MiningState.Add(MiningType.Pick, new PickState());
-
-    //     WoodCuttingState.Add(WoodcuttingType.Tree, new TreeState());
-    //     WoodCuttingState.Add(WoodcuttingType.FruitTree, new FruitTreeState());
-    //     WoodCuttingState.Add(WoodcuttingType.FlowerTree, new FlowerTreeState());
-
-    //     lifeStateDic.Add(LifeType.Farming, FarmingState);
-    //     lifeStateDic.Add(LifeType.Fishing, FishingState);
-    //     lifeStateDic.Add(LifeType.Livestock, LiveStockState);
-    //     lifeStateDic.Add(LifeType.Mining, MiningState);
-    //     lifeStateDic.Add(LifeType.Woodcutting, WoodCuttingState);
-    //     // testDic[LifeType.Woodcutting][WoodcuttingType.Tree].OperateEnter();
-
-    // }
-
-    // void CheckObjType(out IState lifestate)
-    // {
-    //     lifestate = null;
-    //     if (nearObject is TreeObject)
-    //     {
-    //         lifestate = lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType];
-    //         //lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType].OperateEnter();
-    //         //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType]);
-    //         // stateMachine.SetState(dicState[PlayerState.Dead]);
-    //     }
-    //     else if(nearObject is PlantObject)
-    //     {
-    //         //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as PlantObject).farmingType]);
-    //     }
-    //     else if(nearObject is FishingAreaObject)
-    //     {
-    //         //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as FishingAreaObject).fishingType]);
-    //     }
-    //     else if(nearObject is LivestockObject)
-    //     {
-    //         //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as LivestockObject).livestockType]);
-    //     }
-    //     else if(nearObject is MineralObject)
-    //     {
-    //         //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as MineralObject).miningType]);
-    //     }
-    //     else
-    //     {
-    //         Debug.Log("정의되지 않은 오브젝트 타입입니다.");
-    //     }
-    // }
 }

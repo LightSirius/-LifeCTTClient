@@ -39,15 +39,13 @@ public class Axis : MonoBehaviour
 
     // 카메라 회전
     void CameraRotation()
-    {
-        if (transform.rotation != TargetRotation)
-            transform.rotation = Quaternion.Slerp(transform.rotation, TargetRotation, rotationSpeed * Time.deltaTime); // slerp는 나의 회전 값을 목표 회전 값으로 회전 스피드로 이동하는 것
-
+    {        
+        transform.rotation = TargetRotation;
         // 마우스 좌클릭 시
         if(Input.GetMouseButton(1))
         {
             // 값을 축적 시킴
-            Gap.x += Input.GetAxis("Mouse Y") * rotationSpeed * -1; // -1을 곱한이유는 위로끌었을 때 아래를 봐야하기 때문
+            Gap.x += Input.GetAxis("Mouse Y") * rotationSpeed * -1; // -1을 곱한이유는 위로끌었을 때 아래를 봐야하기 때문            
             Gap.y += Input.GetAxis("Mouse X") * rotationSpeed;
 
             // 카메라 회전범위 제한

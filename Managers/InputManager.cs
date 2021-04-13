@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,6 +7,7 @@ using UnityEngine.Events;
 namespace Manager{
     public class InputManager : Singleton<InputManager>
     {
+        public ArrowKeyEvent arrowKeyEvent = new ArrowKeyEvent();
         [SerializeField]
         private List<KeyEvent> keyDownEvents = new List<KeyEvent>();
         [SerializeField]
@@ -35,7 +37,7 @@ namespace Manager{
                         // 다른 키가 동시에 눌렸을 경우도 있으므로 break를 걸지 않음
                     }
                 }
-
+                
             }
 
             if (!Input.anyKey && isHolding){
@@ -48,22 +50,45 @@ namespace Manager{
             }
         }
 
-        public void TestDown(int value){
-            Debug.Log("TestDown");
+        public void AddKeyDownListenr(KeyCode keycode, UnityAction func){
+            KeyEvent temp = keyDownEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+            temp.keyEvent.AddListener(func);
         }
 
-        public void TestUp(){
-            Debug.Log("TestUp");
+        public void RemoveKeyDownListenr(KeyCode keycode, UnityAction func){
+            KeyEvent temp = keyDownEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+            temp.keyEvent.RemoveListener(func);
         }
 
-        public void Test(){
-            Debug.Log("Test");
+        public void AddKeyListenr(KeyCode keycode, UnityAction func){
+            KeyEvent temp = keyEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+            temp.keyEvent.AddListener(func);
         }
 
+        public void RemoveKeyListenr(KeyCode keycode, UnityAction func){
+            KeyEvent temp = keyEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+            temp.keyEvent.RemoveListener(func);
+        }
+
+        public void AddKeyUpListenr(KeyCode keycode, UnityAction func){
+            KeyEvent temp = keyUpEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+            temp.keyEvent.AddListener(func);
+        }
+
+        public void RemoveKeyUpListenr(KeyCode keycode, UnityAction func){
+            KeyEvent temp = keyUpEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+            temp.keyEvent.RemoveListener(func);
+        }
+
+        // 키보드 입력값을 받는 이벤트 클래스
         [System.Serializable]
         public class KeyEvent{
             public KeyCode keyCode;
             public UnityEvent keyEvent;
         }
+
+        // 방향키 이벤트를 받는 클래스
+        [System.Serializable]
+        public class ArrowKeyEvent : UnityEvent<Vector2> {}
     }
 }
