@@ -16,7 +16,7 @@ public abstract class InteractionObject<T> : MonoBehaviour, IInteraction
 
     public float DurationTime => durationTime;      // duration Time 프로퍼티
 
-    public bool IsEnable { get => isEnable; set => isEnable = value; }
+    public bool IsEnable { get => isEnable; set => isEnable = value; }      // 오브젝트 활성화 상태
 
     public Vector3 Position => this.transform.position;     // 오브젝트 위치
 
