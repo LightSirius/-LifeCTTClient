@@ -9,7 +9,6 @@ public class PlayerLifeForce : MonoBehaviour
     [SerializeField]
     private float fatigue = 100f;
     public float decrease_fatigue = 25f;
-
     private float recoveryFatigueTime = 0;
 
     

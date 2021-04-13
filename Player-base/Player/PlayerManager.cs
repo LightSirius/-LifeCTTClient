@@ -6,40 +6,49 @@ public class PlayerManager : MonoBehaviour
 {    
 
     public PlayerMovement playerMovement;
-    private PlayerLifeForce PlayerLifeForce;
-    private float horizontal_Move;
-    private float vertical_Move;
+    private PlayerLifeForce PlayerLifeForce; 
+    private Vector2 direction;   // 무브 , 턴 함수에 넘겨줄 매개 변수
+    private bool isJumping; // 점프 함수에 넘겨줄 매개 변수 
 
-    private float jumping;
-    private void Awake() {
-        
-    }
-    void Start()
+    void Awake() 
     {
         playerMovement = GetComponent<PlayerMovement>();
-        PlayerLifeForce = GetComponent<PlayerLifeForce>();
+        PlayerLifeForce = GetComponent<PlayerLifeForce>();   
     }
 
     void Update()
     {
-        horizontal_Move = Input.GetAxisRaw("Horizontal");
-        vertical_Move = Input.GetAxisRaw("Vertical");
+        KeyInput();
+    }
+    void KeyInput()
+    {
+        direction.x = Input.GetAxisRaw("Horizontal");
+        direction.y = Input.GetAxisRaw("Vertical");
 
-        playerMovement.Move(horizontal_Move,vertical_Move);
-
-        jumping = Input.GetAxisRaw("Jump");    
-        playerMovement.Jump(jumping);
-
+        if(Input.GetButtonDown("Jump"))
+        {
+            isJumping = true;        
+        }
+        else if(Input.GetButtonUp("Jump"))
+        {
+            isJumping = false;            
+        }
+        
+                
         if(Input.GetKeyDown(KeyCode.F)) // 피로도 감소 테스트
         {
             PlayerLifeForce.DecreaseFatigue();
         }
     }
     private void FixedUpdate() 
-    {
-        playerMovement.Turn();
+    {        
+        // PlayerMovement 스크립트의 Move Turn Jump ForceGravity Stamina Fatigue 실행
+        playerMovement.Move(direction);
+        playerMovement.Turn(direction);
+        playerMovement.Jump(isJumping);        
+        playerMovement.ForceGravity();
+
         playerMovement.Stamina();
         PlayerLifeForce.Fatigue();
     }
-    
 }
