@@ -28,7 +28,7 @@ public class Player : MonoBehaviour {
     public bool isFarming = false;      // 생활(채집, 낚시 등)을 하고있을 경우 true 안하고 있을 경우 false
 
     private Transform myTransform;
-    private InteractionObject nearObject;
+    public InteractionObject nearObject;
 
 
 
@@ -63,7 +63,7 @@ public class Player : MonoBehaviour {
         dicState.Add(PlayerState.Walk, walk);
         dicState.Add(PlayerState.Jump, jump);
 
-        InitLifeState();
+        //InitLifeState();
         
         // 기본상태는 idle 상태로 설정        
         stateMachine = new StateMachine(idle);   
@@ -82,7 +82,7 @@ public class Player : MonoBehaviour {
             // 가까이 있으면 바로 채집
             if (nearObject){
                 // 
-                StartCoroutine(PlayerInteraction());
+                // StartCoroutine(PlayerInteraction());
             }
         }
 
@@ -156,141 +156,141 @@ public class Player : MonoBehaviour {
     
     private void OnCollisionEnter(Collision col)
     {
-        if(col.gameObject.tag == "Ground")
+        if(col.gameObject.tag == "Ground")      // 그라운드 태그를 가지고 있는 오브젝트와 충돌하면 true
         {
             isGround = true;
         }
-        else
+        else                                // 그 외의 오브젝트와 충돌했으면 false
             isGround = false;
     }
 
-    private void OnTriggerEnter(Collider other) {
-        Debug.Log(other);
-        // 근처에 있는 오브젝트 판별
-        nearObject = other.GetComponent<InteractionObject>();    
-    }
+    // private void OnTriggerEnter(Collider other) {
+    //     Debug.Log(other);
+    //     // 근처에 있는 오브젝트 판별
+    //     nearObject = other.GetComponent<InteractionObject>();    
+    // }
 
-    private void OnTriggerExit(Collider other) {
-        // 근처에 있는 오브젝트 해제
-        nearObject = null;
-    }
+    // private void OnTriggerExit(Collider other) {
+    //     // 근처에 있는 오브젝트 해제
+    //     nearObject = null;
+    // }
 
 
     // 코루틴으로 루틴 생성
     // 멀리있으면 -> 가까이 가는 것
     // 오브젝트 캐는 이벤트 실행
-    public IEnumerator PlayerInteraction(){
-        // 플레이어가 chunk매니저에게 허락을 받아야함.
-        if (!isFarming){
-            isFarming = true;              // 나중에 chunkManager에 허락을 받는 코드로 바꾸기
+    // public IEnumerator PlayerInteraction(){
+    //     // 플레이어가 chunk매니저에게 허락을 받아야함.
+    //     if (!isFarming){
+    //         isFarming = true;              // 나중에 chunkManager에 허락을 받는 코드로 바꾸기
 
-            // 1. 근처오브젝트로 다가감
-            yield return StartCoroutine(MoveToNearObject());
-            // 2. 캐는 애니메이션 실행 및 UI 켜기
-            yield return StartCoroutine(WaitFarmingTime(nearObject.durationTime));
-            // 3. 오브젝트 정보 전송
-            nearObject.Send();
-            // 따로 스폰처리는 나중에
-            isFarming = false;
-        }
-    }
+    //         // 1. 근처오브젝트로 다가감
+    //         yield return StartCoroutine(MoveToNearObject());
+    //         // 2. 캐는 애니메이션 실행 및 UI 켜기
+    //         yield return StartCoroutine(WaitFarmingTime(nearObject.durationTime));
+    //         // 3. 오브젝트 정보 전송
+    //         nearObject.Send();
+    //         // 따로 스폰처리는 나중에
+    //         isFarming = false;
+    //     }
+    // }
 
-    IEnumerator MoveToNearObject(){
-        float distance = Vector3.Distance(myTransform.position, nearObject.transform.position);
-        while(distance > 0.25f){        // 임시로 지정한 거리(0.25f) 근처까지 도달했을 때 실행
-            // 임시 이동 코드
-            distance = Vector3.Distance(myTransform.position, nearObject.transform.position);
-            Vector3 direction = nearObject.transform.position - myTransform.position;
-            myTransform.position += direction.normalized * 3f * Time.deltaTime;
+    // IEnumerator MoveToNearObject(){
+    //     float distance = Vector3.Distance(myTransform.position, nearObject.transform.position);
+    //     while(distance > 0.25f){        // 임시로 지정한 거리(0.25f) 근처까지 도달했을 때 실행
+    //         // 임시 이동 코드
+    //         distance = Vector3.Distance(myTransform.position, nearObject.transform.position);
+    //         Vector3 direction = nearObject.transform.position - myTransform.position;
+    //         myTransform.position += direction.normalized * 3f * Time.deltaTime;
 
-            yield return null;
-        }
-    }
+    //         yield return null;
+    //     }
+    // }
 
-    IEnumerator WaitFarmingTime(float durationTime){
-        Debug.Log("나실행했어요");
-        float time = 0;
-        IState lifestate;
-        // lifestate를 알아옴
-        // 나무 중 나무를 벨건지 나무의 열매를 딸건지 물어봐야 함
-        // 물어본 값을 interface가 가져가야함 
-        CheckObjType(out lifestate);
-        // 
-        lifestate.OperateEnter();
+    // IEnumerator WaitFarmingTime(float durationTime){
+    //     Debug.Log("나실행했어요");
+    //     float time = 0;
+    //     IState lifestate;
+    //     // lifestate를 알아옴
+    //     // 나무 중 나무를 벨건지 나무의 열매를 딸건지 물어봐야 함
+    //     // 물어본 값을 interface가 가져가야함 
+    //     CheckObjType(out lifestate);
+    //     // 
+    //     lifestate.OperateEnter();
 
-        while(durationTime > time)
-        {
-            lifestate.OperateUpdate();
-            time += 0.01f;
-            yield return new WaitForSeconds(0.01f);
-        }
-        lifestate.OperateExit();
+    //     while(durationTime > time)
+    //     {
+    //         lifestate.OperateUpdate();
+    //         time += 0.01f;
+    //         yield return new WaitForSeconds(0.01f);
+    //     }
+    //     lifestate.OperateExit();
         
     
-    }
+    // }
 
-    void InitLifeState()
-    {
-        Dictionary<Enum, IState> FarmingState = new Dictionary<Enum, IState>();
-        Dictionary<Enum, IState> FishingState = new Dictionary<Enum, IState>();
-        Dictionary<Enum, IState> LiveStockState = new Dictionary<Enum, IState>();
-        Dictionary<Enum, IState> MiningState = new Dictionary<Enum, IState>();
-        Dictionary<Enum, IState> WoodCuttingState = new Dictionary<Enum, IState>();
+    // void InitLifeState()
+    // {
+    //     Dictionary<Enum, IState> FarmingState = new Dictionary<Enum, IState>();
+    //     Dictionary<Enum, IState> FishingState = new Dictionary<Enum, IState>();
+    //     Dictionary<Enum, IState> LiveStockState = new Dictionary<Enum, IState>();
+    //     Dictionary<Enum, IState> MiningState = new Dictionary<Enum, IState>();
+    //     Dictionary<Enum, IState> WoodCuttingState = new Dictionary<Enum, IState>();
         
-        FarmingState.Add(FarmingType.GroundPlant, new GroundState());
-        FarmingState.Add(FarmingType.UnderGroundPlant, new UnGroundState());
+    //     FarmingState.Add(FarmingType.GroundPlant, new GroundState());
+    //     FarmingState.Add(FarmingType.UnderGroundPlant, new UnGroundState());
 
-        FishingState.Add(FishingType.Rod, new RodState());
-        FishingState.Add(FishingType.Net, new NetState());
+    //     FishingState.Add(FishingType.Rod, new RodState());
+    //     FishingState.Add(FishingType.Net, new NetState());
 
-        LiveStockState.Add(LivestockType.Meat, new MeatState());
-        LiveStockState.Add(LivestockType.Leather, new LeatherState());
-        LiveStockState.Add(LivestockType.ByProduct, new ByProductState());
+    //     LiveStockState.Add(LivestockType.Meat, new MeatState());
+    //     LiveStockState.Add(LivestockType.Leather, new LeatherState());
+    //     LiveStockState.Add(LivestockType.ByProduct, new ByProductState());
 
-        MiningState.Add(MiningType.Pick, new PickState());
+    //     MiningState.Add(MiningType.Pick, new PickState());
 
-        WoodCuttingState.Add(WoodcuttingType.Tree, new TreeState());
-        WoodCuttingState.Add(WoodcuttingType.FruitTree, new FruitTreeState());
-        WoodCuttingState.Add(WoodcuttingType.FlowerTree, new FlowerTreeState());
+    //     WoodCuttingState.Add(WoodcuttingType.Tree, new TreeState());
+    //     WoodCuttingState.Add(WoodcuttingType.FruitTree, new FruitTreeState());
+    //     WoodCuttingState.Add(WoodcuttingType.FlowerTree, new FlowerTreeState());
 
-        lifeStateDic.Add(LifeType.Farming, FarmingState);
-        lifeStateDic.Add(LifeType.Fishing, FishingState);
-        lifeStateDic.Add(LifeType.Livestock, LiveStockState);
-        lifeStateDic.Add(LifeType.Mining, MiningState);
-        lifeStateDic.Add(LifeType.Woodcutting, WoodCuttingState);
-        // testDic[LifeType.Woodcutting][WoodcuttingType.Tree].OperateEnter();
+    //     lifeStateDic.Add(LifeType.Farming, FarmingState);
+    //     lifeStateDic.Add(LifeType.Fishing, FishingState);
+    //     lifeStateDic.Add(LifeType.Livestock, LiveStockState);
+    //     lifeStateDic.Add(LifeType.Mining, MiningState);
+    //     lifeStateDic.Add(LifeType.Woodcutting, WoodCuttingState);
+    //     // testDic[LifeType.Woodcutting][WoodcuttingType.Tree].OperateEnter();
 
-    }
+    // }
 
-    void CheckObjType(out IState lifestate)
-    {
-        lifestate = null;
-        if (nearObject is TreeObject)
-        {
-            lifestate = lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType];
-            //lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType].OperateEnter();
-            //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType]);
-            // stateMachine.SetState(dicState[PlayerState.Dead]);
-        }
-        else if(nearObject is PlantObject)
-        {
-            //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as PlantObject).farmingType]);
-        }
-        else if(nearObject is FishingAreaObject)
-        {
-            //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as FishingAreaObject).fishingType]);
-        }
-        else if(nearObject is LivestockObject)
-        {
-            //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as LivestockObject).livestockType]);
-        }
-        else if(nearObject is MineralObject)
-        {
-            //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as MineralObject).miningType]);
-        }
-        else
-        {
-            Debug.Log("정의되지 않은 오브젝트 타입입니다.");
-        }
-    }
+    // void CheckObjType(out IState lifestate)
+    // {
+    //     lifestate = null;
+    //     if (nearObject is TreeObject)
+    //     {
+    //         lifestate = lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType];
+    //         //lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType].OperateEnter();
+    //         //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as TreeObject).woodcuttingType]);
+    //         // stateMachine.SetState(dicState[PlayerState.Dead]);
+    //     }
+    //     else if(nearObject is PlantObject)
+    //     {
+    //         //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as PlantObject).farmingType]);
+    //     }
+    //     else if(nearObject is FishingAreaObject)
+    //     {
+    //         //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as FishingAreaObject).fishingType]);
+    //     }
+    //     else if(nearObject is LivestockObject)
+    //     {
+    //         //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as LivestockObject).livestockType]);
+    //     }
+    //     else if(nearObject is MineralObject)
+    //     {
+    //         //LifeStateMachine.SetState(lifeStateDic[nearObject.lifeType][(nearObject as MineralObject).miningType]);
+    //     }
+    //     else
+    //     {
+    //         Debug.Log("정의되지 않은 오브젝트 타입입니다.");
+    //     }
+    // }
 }

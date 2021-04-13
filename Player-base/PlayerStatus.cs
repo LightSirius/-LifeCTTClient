@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using LifeContent;
 
 public class PlayerStatus 
 {
-    public Dictionary<LifeType.Kind,Status> lvdicState = new Dictionary<LifeType.Kind, Status>();
+    public Dictionary<LifeType,Status> lvdicState = new Dictionary<LifeType, Status>();
 }
