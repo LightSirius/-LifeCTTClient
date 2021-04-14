@@ -1,92 +1,56 @@
-// using System;
-// using System.Collections.Generic;
-// using UnityEngine;
-// using LifeContent;
-// using Player;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using LifeContent;
+using Player;
 
-// namespace Anim{
+namespace Anim{
+    public enum Gesture{
+        Hi = 0,
+        Success,
+        Fail
+    }
 
-//     public class PlayerAnimController : AnimationController<PlayerState> {
-        
-//         AnimInfo<PlayerState> moveInfo;
-//         AnimInfo<PlayerState> exitInfo;
+    public class PlayerAnimController : AnimationController {
 
-//         protected override void Start() {
-//             base.Start();
+        protected override void Start() {
+            base.Start();
 
-//             moveInfo = animationState[PlayerState.Move];
-//             exitInfo = animationState[PlayerState.Exit];
-//         }
+            current_state = PlayerState.Move;
+        }
 
-//         // public static PlayerState GetLifeTypeToPlayerState(Enum life){
-//         //     PlayerState state = PlayerState.Exit;
+        protected override void InitAnimState(){
+            animationState.Add(PlayerState.Move, new AnimInfo(PlayerState.Move, ParmeterType.Boolean, "Move"));
 
-//         //     switch(life){
-//         //         case WoodcuttingType.Tree:
-//         //             // 현재 애니메이션이  존재하지 않음
-//         //             break;
-//         //         case WoodcuttingType.FruitTree:
-//         //             state = PlayerState.Woodcutting_Fruit;
-//         //             break;
-//         //         case WoodcuttingType.FlowerTree:
-//         //             state = PlayerState.Woodcutting_Flower;
-//         //             break;
-//         //         case FishingType.Rod:
-//         //             state = PlayerState.Fishing_Rod_Start;
-//         //             break;
-//         //         case FishingType.Net:
-//         //             // 현재 애니메이션이  존재하지 않음
-//         //             break;
-//         //         case FarmingType.GroundPlant:
-//         //             state = PlayerState.Farming_Ground;
-//         //             break;
-//         //         case FarmingType.UnderGroundPlant:
-//         //             state = PlayerState.Farming_Underground;
-//         //             break;
-//         //         case LivestockType.Meat:
-//         //             state = PlayerState.Livestock_Meat;
-//         //             break;
-//         //         case LivestockType.Leather:
-//         //             state = PlayerState.Livestock_Leather;
-//         //             break;
-//         //         case LivestockType.ByProduct:
-//         //             state = PlayerState.Livestock_Milk;
-//         //             break;
-//         //     }
+            animationState.Add(PlayerState.Gesture, new AnimInfo(PlayerState.Gesture, ParmeterType.Boolean, "Gesture"));
+            
+            animationState.Add(LifeType.Farming, new AnimInfo(LifeType.Farming, ParmeterType.Boolean, "Farming"));
+            animationState.Add(LifeType.Fishing, new AnimInfo(LifeType.Fishing, ParmeterType.Boolean, "Fishing"));
+            animationState.Add(LifeType.Mining, new AnimInfo(LifeType.Mining, ParmeterType.Boolean, "Mining"));
+            animationState.Add(LifeType.Livestock, new AnimInfo(LifeType.Livestock, ParmeterType.Boolean, "Livestock"));
+            animationState.Add(LifeType.Woodcutting, new AnimInfo(LifeType.Woodcutting, ParmeterType.Boolean, "Woodcutting"));
+        }
 
-//         //     return state;
-//         // }
-
-//         // 플레이어의 상태를 변환시키는 함수
-//         public override void ChangeState(PlayerState next_state, object value = null){
-//             if (current_state != next_state){       // 현재 상태가 다음 상태와 다르면 상태 변환
-//                 current_state = next_state;
+        // 플레이어의 상태를 변환시키는 함수
+        public override void ChangeState(Enum next_state, Enum type = null, object value = null){
+            if (next_state != current_state){
+                AnimInfo currentInfo = animationState[current_state];
+                parameterActions[currentInfo.parmeterType](currentInfo.stateName, false);
                 
-//                 // exit 미지정 시 종료
-//                 if (exitInfo == null){
-//                     Debug.LogError("Exit State 미지정 정의 필요");
-//                     return;
-//                 }
+                if (type != null){
+                    parameterActions[ParmeterType.Integer]("Type", type);
+                }
 
-//                 // 플레이어 현재 애니메이션 종료
-//                 parameterActions[exitInfo.parmeterType](exitInfo.stateName, value);
+                AnimInfo next_info = animationState[next_state];
+                parameterActions[next_info.parmeterType](next_info.stateName, true);
+            }
+        }
 
-//                 // 플레이어 다음 애니메이션 상태 지정 후 실행
-//                 AnimInfo<PlayerState> next_info = animationState[next_state];
-//                 parameterActions[next_info.parmeterType](next_info.stateName, value);
-//             }
-//             else{
-//                 // 현재 상태가 다음 상태와 같을 경우 아무것도 하지 않음
-//                 return;
-//             }
-//         }
-
-//         // 플레이어 움직일때마다 이 함수 실행 필요
-//         public void UpdateMove(Vector3 value){
-//             if (current_state != PlayerState.Move){
-//                 current_state = PlayerState.Move;
-//             }
-//             parameterActions[moveInfo.parmeterType](moveInfo.stateName, value.normalized.magnitude);
-//         }
-//     }
-// }
+        // 플레이어 움직일때마다 이 함수 실행 필요
+        public void UpdateMove(Vector2 value){
+            if (current_state.Equals(PlayerState.Move)){
+                parameterActions[ParmeterType.Float]("MoveValue", value.normalized.magnitude);
+            }
+        }
+    }
+}

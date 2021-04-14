@@ -14,26 +14,27 @@ namespace Player{
 
     // Player script
     // 역할 : player status, player animation, player life skill 을 관리
-    [RequireComponent(typeof(PlayerMovement))]
+    [RequireComponent(typeof(PlayerMovement), typeof(PlayerAnimController))]
     public class Player : MonoBehaviour {
 
         private IInteraction nearInteractionObject = null; // 상호작용 오브젝트 (채집 가능한 오브젝트)
         private PlayerMovement playerMovement;      // 플레이어 움직이기, 점프
         private PlayerStatus playerStatus;          // 생활 스테이터스
         private PlayerState playerState;            // 플레이어 현재 상태
-
-        // 애니메이션 스크립트 추가 바람
-
+        private PlayerAnimController playerAnimController;
         // Life Skill 스크립트 추가 바람
 
         private void Start() {
-            
+            playerMovement = GetComponent<PlayerMovement>();
+            playerAnimController = GetComponent<PlayerAnimController>();
         }
 
         private void OnEnable() {
             // PlayerMovement 추가 후 주석 해제 바람
             // InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Move);
             // InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Turn);
+            InputManager.Instance.arrowKeyEvent.AddListener(playerAnimController.UpdateMove);
+
             InputManager.Instance.arrowKeyEvent.AddListener(CheckMove);
             InputManager.Instance.AddKeyDownListenr(KeyCode.G, DoSkill);
         }

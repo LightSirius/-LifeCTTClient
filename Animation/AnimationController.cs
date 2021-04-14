@@ -15,13 +15,12 @@ namespace Anim{
 
     // T는 무조건 state가 와야 함
     [RequireComponent(typeof(Animator))]
-    public abstract class AnimationController<T> : MonoBehaviour
+    public abstract class AnimationController : MonoBehaviour
     {
-        [Tooltip("플레이어 애니메이션 정보")]
-        public List<AnimInfo<T>> animInfos = new List<AnimInfo<T>>();
-        public T Current_State { get{ return current_state; }}
-        protected T current_state;
-        protected Dictionary<T, AnimInfo<T>> animationState = new Dictionary<T, AnimInfo<T>>();
+        // public List<AnimInfo> animInfos = new List<AnimInfo>();
+        public Enum Current_State { get{ return current_state; }}
+        protected Enum current_state;
+        protected Dictionary<Enum, AnimInfo> animationState = new Dictionary<Enum, AnimInfo>();
         protected Dictionary<ParmeterType, Action<string, object>> parameterActions = new Dictionary<ParmeterType, Action<string, object>>();
 
         private Animator animator;
@@ -41,12 +40,8 @@ namespace Anim{
             parameterActions.Add(ParmeterType.Integer, (string stateName, object value) => {animator.SetInteger(stateName, (int)value); });
         }
 
-        private void InitAnimState(){
-            for (int i = 0; i < animInfos.Count; i++){
-                animationState.Add(animInfos[i].state, animInfos[i]);
-            }
-        }
+        protected abstract void InitAnimState();
 
-        public abstract void ChangeState(T next_state, object value = null);
+        public abstract void ChangeState(Enum next_state, Enum type = null, object value = null);
     }
 }
