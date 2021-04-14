@@ -24,27 +24,40 @@ namespace Player{
         private PlayerAnimController playerAnimController;
         // Life Skill 스크립트 추가 바람
 
-        private void Start() {
+        private void Awake() {
             playerMovement = GetComponent<PlayerMovement>();
             playerAnimController = GetComponent<PlayerAnimController>();
         }
 
         private void OnEnable() {
-            // PlayerMovement 추가 후 주석 해제 바람
             // InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Move);
-            // InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Turn);
+            InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Turn);
+
             InputManager.Instance.arrowKeyEvent.AddListener(playerAnimController.UpdateMove);
 
             InputManager.Instance.arrowKeyEvent.AddListener(CheckMove);
-            InputManager.Instance.AddKeyDownListenr(KeyCode.G, DoSkill);
+
+            // 키 이벤트 추가
+            // InputManager.Instance.AddKeyDownListenr(KeyCode.G, DoSkill);
+            InputManager.Instance.AddKeyDownListenr(KeyCode.Space, playerMovement.Jump);
         }
 
         private void OnDisable() {
-            // PlayerMovement 추가 후 주석 해제 바람
-            // InputManager.Instance.arrowKeyEvent.RemoveListener(playerMovement.Move);
-            // InputManager.Instance.arrowKeyEvent.RemoveListener(playerMovement.Turn);
-            InputManager.Instance.arrowKeyEvent.RemoveListener(CheckMove);
-            InputManager.Instance.RemoveKeyDownListenr(KeyCode.G, DoSkill);
+            if (InputManager.Instance != null){
+                InputManager.Instance.arrowKeyEvent.RemoveListener(playerMovement.Move);
+                InputManager.Instance.arrowKeyEvent.RemoveListener(playerMovement.Turn);
+            
+                InputManager.Instance.arrowKeyEvent.RemoveListener(playerAnimController.UpdateMove);
+
+                InputManager.Instance.arrowKeyEvent.RemoveListener(CheckMove);
+
+                InputManager.Instance.RemoveKeyDownListenr(KeyCode.G, DoSkill);
+                InputManager.Instance.RemoveKeyDownListenr(KeyCode.Space, playerMovement.Jump);
+            }
+        }
+
+        private void FixedUpdate() {
+            playerMovement.ForceGravity();
         }
 
         private void OnTriggerEnter(Collider other) {
@@ -103,6 +116,56 @@ namespace Player{
 
                 // 2. 애니메이션 실행
             }
+        }
+
+        // 기본적으로 사용전 if문으로 nearObject가 null이 아닌지 확인 후 실행
+        public IEnumerator PlayerLifeInteraction()
+        {
+            // 근처 오브젝트로 다가가는 코루틴 실행
+
+            // 오브젝트가 파밍가능한 상태고 플레이어상태가 Skill이 아니고 (추가사항) 생활력이 충분하다면
+            if(nearInteractionObject.IsEnable && playerState != PlayerState.Skill)
+            {
+                // 라이프스킬 실행
+                StartCoroutine(DoLifeSkill());
+            }
+            else if(!nearInteractionObject.IsEnable)
+            {
+                Debug.Log("채집 가능한 상태가 아닙니다.");
+            }
+            // else if(생활력이 충분하지 않다면) 
+
+            yield break;
+        }
+
+        private IEnumerator DoLifeSkill()
+        {
+            playerState = PlayerState.Skill;
+            float time = 0;
+            // 1. nearObject안에 있는 type을 가져와서 씀
+
+            // 2. 애니메이션 실행
+
+            // 3. UI실행 ( 소요바 및 텍스트 )
+
+            // 4. 0.1초 주기마다 실행해야 할 것들 ?
+            while(time <= nearInteractionObject.DurationTime)
+            {
+                time += 0.1f;
+                // 서버에 데이터 전송 ?
+
+                yield return new WaitForSeconds(0.1f);
+            }
+            playerState = PlayerState.Gesture;
+            // 5. 성공 애니메이션 실행
+
+            // 6. 아이템 얻음
+
+            // 7. UI 실행
+
+            // 8. 3초 뒤 UI 초기화
+            yield return new WaitForSeconds(3f);
+
         }
     }
 }

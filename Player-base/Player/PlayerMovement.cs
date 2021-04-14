@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
 
-    private PlayerManager playerManager;
+    // private PlayerManager playerManager;
 
     #region 변수 목록
 
@@ -34,7 +34,7 @@ public class PlayerMovement : MonoBehaviour
     #region Awake, Start
     private void Awake() 
     {
-       playerManager = GetComponent<PlayerManager>();
+       // playerManager = GetComponent<PlayerManager>();
        rigid_player = GetComponent<Rigidbody>();
        rigid_player.velocity = velocity;
     }
@@ -42,7 +42,7 @@ public class PlayerMovement : MonoBehaviour
     {      
         stamina = 100f;
         movement = Vector3.zero;
-        camVec = GameObject.Find("CameraVector").transform;
+        camVec = GameObject.FindWithTag("MainCamera").transform;
         camDir = camVec.localRotation * Vector3.forward; 
     }
 
@@ -76,6 +76,15 @@ public class PlayerMovement : MonoBehaviour
     public void Jump(bool isJumping) // 점프
     {               
         if(isJumping && isGround)
+        {
+            rigid_player.AddForce(new Vector3(0f, jumpPower, 0f));    
+            isGround = false;                                                            
+        }        
+    }
+
+    public void Jump() // 점프
+    {               
+        if(isGround)
         {
             rigid_player.AddForce(new Vector3(0f, jumpPower, 0f));    
             isGround = false;                                                            
