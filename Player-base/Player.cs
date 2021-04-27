@@ -30,7 +30,7 @@ namespace Player{
         }
 
         private void OnEnable() {
-            // InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Move);
+            InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Move);
             InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Turn);
 
             InputManager.Instance.arrowKeyEvent.AddListener(playerAnimController.UpdateMove);
@@ -38,7 +38,7 @@ namespace Player{
             InputManager.Instance.arrowKeyEvent.AddListener(CheckMove);
 
             // 키 이벤트 추가
-            // InputManager.Instance.AddKeyDownListenr(KeyCode.G, DoSkill);
+            InputManager.Instance.AddKeyDownListenr(KeyCode.G, DoSkill);
             InputManager.Instance.AddKeyDownListenr(KeyCode.Space, playerMovement.Jump);
         }
 
@@ -68,8 +68,6 @@ namespace Player{
                     nearInteractionObject = null;
                     return;
                 }
-                
-                // Life UI 창 띄우기
             }
         }
 
@@ -77,20 +75,16 @@ namespace Player{
             if (nearInteractionObject == null){
                 nearInteractionObject = other.GetComponent<IInteraction>();
 
-                if (!nearInteractionObject.IsEnable){
-                    nearInteractionObject = null;
-                    return;
-                }
-
-                // Life UI창 띄우기
+                // if (!nearInteractionObject.IsEnable){
+                //     nearInteractionObject = null;
+                //     return;
+                // }
             }
         }
 
         private void OnTriggerExit(Collider other) {
             if (nearInteractionObject != null){
                 nearInteractionObject = null;       // 플레이어가 인식하고있던 interaction Object 해제
-
-                // Life UI창 해제
             }
         }
 
@@ -98,10 +92,13 @@ namespace Player{
         // InputManager 이벤트에 OnEnable시 등록함
         // OnDisable시 이벤트 등록 해제
         private void CheckMove(Vector2 direction){
-            if (direction.SqrMagnitude() > 0f && playerState == PlayerState.Skill){
+            if (direction.SqrMagnitude() > 0f){
                 // 애니메이션 종료 스크립트 작성 필요
+                playerAnimController.ChangeState(PlayerState.Move);
 
                 // 현재 사용중인 스킬 종료 스크립트 작성 필요
+                StopCoroutine(DoLifeSkill());
+                StopCoroutine(PlayerLifeInteraction());
                 // UI 초기화 함수 실행
             }
 
@@ -109,12 +106,10 @@ namespace Player{
         }
 
         private void DoSkill(){
-            if (nearInteractionObject != null && nearInteractionObject.IsEnable && playerState != PlayerState.Skill){
-                playerState = PlayerState.Skill;
-                // 생활 스킬
-                // 1. nearObject안에 있는 type을 가져와서 씀
-
-                // 2. 애니메이션 실행
+            Debug.Log("실행 ");
+            if (nearInteractionObject != null){
+                // playerAnimController.ChangeState(nearInteractionObject.lifeType, nearInteractionObject.Type);
+                StartCoroutine(PlayerLifeInteraction());
             }
         }
 
@@ -124,18 +119,9 @@ namespace Player{
             // 근처 오브젝트로 다가가는 코루틴 실행
 
             // 오브젝트가 파밍가능한 상태고 플레이어상태가 Skill이 아니고 (추가사항) 생활력이 충분하다면
-            if(nearInteractionObject.IsEnable && playerState != PlayerState.Skill)
-            {
-                // 라이프스킬 실행
-                StartCoroutine(DoLifeSkill());
-            }
-            else if(!nearInteractionObject.IsEnable)
-            {
-                Debug.Log("채집 가능한 상태가 아닙니다.");
-            }
-            // else if(생활력이 충분하지 않다면) 
-
-            yield break;
+            Debug.Log("움직여!!");
+            // 라이프스킬 실행
+            yield return StartCoroutine(DoLifeSkill());
         }
 
         private IEnumerator DoLifeSkill()
@@ -145,6 +131,8 @@ namespace Player{
             // 1. nearObject안에 있는 type을 가져와서 씀
 
             // 2. 애니메이션 실행
+            playerAnimController.ChangeState(nearInteractionObject.lifeType, nearInteractionObject.Type);
+            yield return null;
 
             // 3. UI실행 ( 소요바 및 텍스트 )
 
@@ -156,7 +144,8 @@ namespace Player{
 
                 yield return new WaitForSeconds(0.1f);
             }
-            playerState = PlayerState.Gesture;
+            //playerState = PlayerState.Gesture;
+            playerAnimController.ChangeState(PlayerState.Move);
             // 5. 성공 애니메이션 실행
 
             // 6. 아이템 얻음

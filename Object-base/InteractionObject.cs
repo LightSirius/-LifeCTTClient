@@ -6,7 +6,12 @@ using System;
 public abstract class InteractionObject<T> : MonoBehaviour, IInteraction
 {
     public Climate suitableClimate;     // 적합 기후
+    public LifeType lifeType => _lifeType;
     public Enum Type => type as Enum;   // type 프로퍼티
+
+    [HideInInspector]
+    public LifeType _lifeType;
+    
     [SerializeField]
     protected T type;
 
@@ -19,6 +24,7 @@ public abstract class InteractionObject<T> : MonoBehaviour, IInteraction
     public bool IsEnable { get => isEnable; set => isEnable = value; }      // 오브젝트 활성화 상태
 
     public Vector3 Position => this.transform.position;     // 오브젝트 위치
+
 
     protected bool isEnable;
 

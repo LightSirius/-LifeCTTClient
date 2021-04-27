@@ -43,6 +43,8 @@ namespace Anim{
 
                 AnimInfo next_info = animationState[next_state];
                 parameterActions[next_info.parmeterType](next_info.stateName, true);
+
+                current_state = next_state;
             }
         }
 
