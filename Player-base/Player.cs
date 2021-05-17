@@ -113,12 +113,12 @@ namespace Player{
             }
         }
 
-        // 기본적으로 사용전 if문으로 nearObject가 null이 아닌지 확인 후 실행
+        // 기본적으로 사용전 if문으로 nearObject가 null이 아닌지 확인 후 실행 - 확인
         public IEnumerator PlayerLifeInteraction()
         {
-            // 근처 오브젝트로 다가가는 코루틴 실행
 
             // 오브젝트가 파밍가능한 상태고 플레이어상태가 Skill이 아니고 (추가사항) 생활력이 충분하다면
+            // 근처 오브젝트로 다가가는 코루틴 실행
             Debug.Log("움직여!!");
             // 라이프스킬 실행
             yield return StartCoroutine(DoLifeSkill());
@@ -135,7 +135,8 @@ namespace Player{
             yield return null;
 
             // 3. UI실행 ( 소요바 및 텍스트 )
-
+            string text = nearInteractionObject.ToString() + "을 채집중입니다...";
+            UIMgr.Instance.SetSkillProgressBar(nearInteractionObject.DurationTime, text);
             // 4. 0.1초 주기마다 실행해야 할 것들 ?
             while(time <= nearInteractionObject.DurationTime)
             {
