@@ -29,8 +29,19 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody rigid_player;
     
     private bool isGround;
-
+    private bool isNear = false;
+    private bool isInteract = true;
+    [SerializeField]
+    private Vector3 targetVec;
+    [SerializeField]
+    private GameObject interactTarget;
+    private GameObject myPlayer;
     #endregion
+
+    void Update() {        
+        InteractionMove();
+    }
+
     #region Awake, Start
     private void Awake() 
     {
@@ -61,7 +72,7 @@ public class PlayerMovement : MonoBehaviour
 
         velocity = (moveHorizontal + moveVertical).normalized * moveSpeed;
 
-        rigid_player.MovePosition(transform.position + velocity * Time.deltaTime); 
+        rigid_player.MovePosition(transform.position + velocity * Time.deltaTime);
     }
 
     public void Turn(Vector2 direction) // 플레이어 회전
@@ -95,7 +106,9 @@ public class PlayerMovement : MonoBehaviour
     {
         rigid_player.AddForce(Vector3.down * forceGravity);
     }
+    #endregion
 
+    #region  스태미나 및 상호작용
     public void Stamina() // 이동 스태미나 
     {
         if(stamina <= 0) 
@@ -134,6 +147,50 @@ public class PlayerMovement : MonoBehaviour
         stamina += 1.75f;
     }
 
+    private void InteractionMove()
+    {
+        if(Input.GetKeyDown(KeyCode.E) && isNear && isInteract)
+        {
+            
+            StartCoroutine(InteractionMove(myPlayer, targetVec));
+        }
+    }
+
+    #endregion
+
+    #region 코루틴
+
+
+    // 상호작용 접근 코루틴
+    IEnumerator InteractionMove(GameObject player, Vector3 targetPos)
+    {
+        Debug.Log("상호작용 코루틴 실행");                
+        isInteract = false; //상호 작용 비 활성화
+
+        // 1. 해당 오브젝트에게 일정거리까지 다가감
+        float count = 0;
+        Vector3 wasPos = player.transform.position;
+
+        // 타겟 바라보기
+        Vector3 relativePos = targetPos - transform.position;   
+        Quaternion targetViewRotation = Quaternion.LookRotation(relativePos);
+        player.transform.rotation = targetViewRotation;
+
+        while (true)
+        {
+            count += Time.deltaTime; // 0 ~ 1 까지 Time.deltaTime을 더해줌
+                player.transform.position = Vector3.Lerp(wasPos,targetPos ,count);
+                    float distance = Vector3.Distance(targetPos, player.transform.position);                      
+                    //플레이어와 타겟의 사이 거리 계산
+            if(distance <= 1)   // 1만큼 가까워지면 멈춤
+            {                                
+                break;
+            }            
+            yield return null;            
+            isInteract = true;                 // 다시 상호작용할 수 있는 상태로 활성화
+        }                
+    }
+
     #endregion
 
     #region 충돌 처리
@@ -142,8 +199,33 @@ public class PlayerMovement : MonoBehaviour
         if(col.gameObject.tag == "Ground")
         {                   
             isGround = true;            
+        }            
+    }    
+
+    private void OnTriggerEnter(Collider other) 
+    {
+        if(other.gameObject.tag=="GameController")
+        {
+            Debug.Log("접근 감지");
+            isNear = true;                        
+            interactTarget = other.gameObject;
+            targetVec = new Vector3(
+            interactTarget.transform.position.x,
+            interactTarget.transform.position.y,
+            interactTarget.transform.position.z);  
         }
     }
+    private void OnTriggerExit(Collider other) 
+    {
+        if(other.gameObject.tag=="GameController")
+        {
+            Debug.Log("떨어짐 감지");
+            isNear = false;        
+            interactTarget = null;
+            
+        }
+    }
+    
     #endregion
    
 }
