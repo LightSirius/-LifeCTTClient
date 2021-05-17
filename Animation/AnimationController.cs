@@ -23,7 +23,7 @@ namespace Anim{
         protected Dictionary<Enum, AnimInfo> animationState = new Dictionary<Enum, AnimInfo>();
         protected Dictionary<ParmeterType, Action<string, object>> parameterActions = new Dictionary<ParmeterType, Action<string, object>>();
 
-        private Animator animator;
+        protected Animator animator;
 
         protected virtual void Start()
         {

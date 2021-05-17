@@ -12,7 +12,6 @@ namespace Anim{
     }
 
     public class PlayerAnimController : AnimationController {
-
         protected override void Start() {
             base.Start();
 

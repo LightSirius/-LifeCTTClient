@@ -61,9 +61,9 @@ namespace Player{
         }
 
         private void OnTriggerEnter(Collider other) {
-            if (nearInteractionObject == null){
-                nearInteractionObject = other.GetComponent<IInteraction>();
+            nearInteractionObject = other.GetComponent<IInteraction>();
 
+            if (nearInteractionObject != null){
                 if (!nearInteractionObject.IsEnable){
                     nearInteractionObject = null;
                     return;
@@ -74,11 +74,6 @@ namespace Player{
         private void OnTriggerStay(Collider other) {
             if (nearInteractionObject == null){
                 nearInteractionObject = other.GetComponent<IInteraction>();
-
-                // if (!nearInteractionObject.IsEnable){
-                //     nearInteractionObject = null;
-                //     return;
-                // }
             }
         }
 
@@ -92,7 +87,10 @@ namespace Player{
         // InputManager 이벤트에 OnEnable시 등록함
         // OnDisable시 이벤트 등록 해제
         private void CheckMove(Vector2 direction){
-            if (direction.SqrMagnitude() > 0f){
+            if (direction.SqrMagnitude() > 0f && playerState != PlayerState.Move){
+                // 상태변환
+                playerState = PlayerState.Move;
+
                 // 애니메이션 종료 스크립트 작성 필요
                 playerAnimController.ChangeState(PlayerState.Move);
 
@@ -101,14 +99,11 @@ namespace Player{
                 StopCoroutine(PlayerLifeInteraction());
                 // UI 초기화 함수 실행
             }
-
-            playerState = PlayerState.Move;
         }
 
         private void DoSkill(){
             Debug.Log("실행 ");
             if (nearInteractionObject != null){
-                // playerAnimController.ChangeState(nearInteractionObject.lifeType, nearInteractionObject.Type);
                 StartCoroutine(PlayerLifeInteraction());
             }
         }
@@ -144,17 +139,16 @@ namespace Player{
 
                 yield return new WaitForSeconds(0.1f);
             }
-            //playerState = PlayerState.Gesture;
-            playerAnimController.ChangeState(PlayerState.Move);
+
             // 5. 성공 애니메이션 실행
+            playerState = PlayerState.Move;
+            playerAnimController.ChangeState(PlayerState.Move);
 
             // 6. 아이템 얻음
 
             // 7. UI 실행
 
             // 8. 3초 뒤 UI 초기화
-            yield return new WaitForSeconds(3f);
-
         }
     }
 }

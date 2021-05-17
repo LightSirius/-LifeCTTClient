@@ -7,11 +7,15 @@ using UnityEngine.Events;
 namespace Manager{
     public class InputManager : Singleton<InputManager>
     {
+        // 방향키 눌렀을때 발생하는 이벤트
         public ArrowKeyEvent arrowKeyEvent = new ArrowKeyEvent();
+        // 키를 눌렀을 때 발생하는 이벤트
         [SerializeField]
         private List<KeyEvent> keyDownEvents = new List<KeyEvent>();
+        // 키를 누르고 있을 때 발생하는 이벤트
         [SerializeField]
         private List<KeyEvent> keyEvents = new List<KeyEvent>();
+        // 키를 땟을 때 발생하는 이벤트
         [SerializeField]
         private List<KeyEvent> keyUpEvents = new List<KeyEvent>();
 
