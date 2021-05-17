@@ -88,6 +88,7 @@ namespace Player{
         // OnDisable시 이벤트 등록 해제
         private void CheckMove(Vector2 direction){
             if (direction.SqrMagnitude() > 0f && playerState != PlayerState.Move){
+                Debug.Log("ddd");
                 // 상태변환
                 playerState = PlayerState.Move;
 
@@ -95,15 +96,15 @@ namespace Player{
                 playerAnimController.ChangeState(PlayerState.Move);
 
                 // 현재 사용중인 스킬 종료 스크립트 작성 필요
-                StopCoroutine(DoLifeSkill());
+                // StopCoroutine(DoLifeSkill());
                 StopCoroutine(PlayerLifeInteraction());
                 // UI 초기화 함수 실행
+                UIMgr.Instance.InitUI();
             }
         }
 
         private void DoSkill(){
-            Debug.Log("실행 ");
-            if (nearInteractionObject != null){
+            if (nearInteractionObject != null && playerState != PlayerState.Skill){
                 StartCoroutine(PlayerLifeInteraction());
             }
         }
@@ -114,7 +115,7 @@ namespace Player{
 
             // 오브젝트가 파밍가능한 상태고 플레이어상태가 Skill이 아니고 (추가사항) 생활력이 충분하다면
             // 근처 오브젝트로 다가가는 코루틴 실행
-            Debug.Log("움직여!!");
+
             // 라이프스킬 실행
             yield return StartCoroutine(DoLifeSkill());
         }
@@ -131,7 +132,8 @@ namespace Player{
 
             // 3. UI실행 ( 소요바 및 텍스트 )
             string text = nearInteractionObject.ToString() + "을 채집중입니다...";
-            UIMgr.Instance.SetSkillProgressBar(nearInteractionObject.DurationTime, text);
+            UIMgr.Instance.SetSkillUI(nearInteractionObject.DurationTime, text);
+            
             // 4. 0.1초 주기마다 실행해야 할 것들 ?
             while(time <= nearInteractionObject.DurationTime)
             {
