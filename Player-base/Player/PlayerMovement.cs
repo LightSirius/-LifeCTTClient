@@ -21,6 +21,7 @@ public class PlayerMovement : MonoBehaviour
     private float stamina = 100f;
     private float recoveryStaminaTime = 0;
 
+    [SerializeField]
     private Transform camVec; // 카메라 벡터
     private Vector3 camDir; // 카메라가 보는 방향
     private Vector3 movement;        
@@ -213,8 +214,7 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.Log("떨어짐 감지");
             isNear = false;        
-            interactTarget = null;
-            
+            interactTarget = null;            
         }
     }
     

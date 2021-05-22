@@ -32,8 +32,7 @@ public class PlayerManager : MonoBehaviour
         else if(Input.GetButtonUp("Jump"))
         {
             isJumping = false;            
-        }
-                        
+        }                        
         if(Input.GetKeyDown(KeyCode.F)) // 피로도 감소 테스트
         {
             PlayerLifeForce.DecreaseFatigue();
