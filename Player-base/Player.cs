@@ -23,7 +23,6 @@ namespace Player{
         private PlayerState playerState;            // 플레이어 현재 상태
         private PlayerAnimController playerAnimController;
         // Life Skill 스크립트 추가 바람
-        private Vector3 moveValue = Vector3.zero;
         private Coroutine skillCoroutine = null;
 
         private void Awake() {
@@ -93,7 +92,9 @@ namespace Player{
         {
             playerState = PlayerState.Skill;
             float time = 0;
-            // 1. nearObject안에 있는 type을 가져와서 씀
+            
+            // 1.플레이어가 오브젝트 주변으로 이동
+            yield return StartCoroutine(playerMovement.InteractionMove(nearInteractionObject.Position));
 
             // 2. 애니메이션 실행
             playerAnimController.ChangeState(nearInteractionObject.lifeType, nearInteractionObject.Type);

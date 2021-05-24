@@ -8,7 +8,11 @@ namespace Manager{
     public class InputManager : Singleton<InputManager>
     {
         // 방향키 눌렀을때 발생하는 이벤트
-        public ArrowKeyEvent arrowKeyEvent = new ArrowKeyEvent();
+        public Vector2KeyEvent arrowKeyEvent = new Vector2KeyEvent();
+
+        // 마우스 방향정보를 가지고 있는 이벤트
+        public Vector2KeyEvent mousePosEvent = new Vector2KeyEvent();
+
         // 키를 눌렀을 때 발생하는 이벤트
         [SerializeField]
         private List<KeyEvent> keyDownEvents = new List<KeyEvent>();
@@ -30,6 +34,11 @@ namespace Manager{
         }
 
         private void Update() {
+            float x = Input.GetAxis("Mouse X");
+            float y = Input.GetAxis("Mouse Y");
+
+            mousePosEvent.Invoke(new Vector2(x, y));
+
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
 
@@ -135,6 +144,6 @@ namespace Manager{
 
         // 방향키 이벤트를 받는 클래스
         [System.Serializable]
-        public class ArrowKeyEvent : UnityEvent<Vector2> {}
+        public class Vector2KeyEvent : UnityEvent<Vector2> {}
     }
 }

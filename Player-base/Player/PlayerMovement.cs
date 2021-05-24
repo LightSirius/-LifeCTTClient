@@ -104,7 +104,9 @@ public class PlayerMovement : MonoBehaviour
 
     public void ForceGravity() // 중력 적용
     {
-        rigid_player.AddForce(Vector3.down * forceGravity);
+        if (!isGround){
+            rigid_player.AddForce(Vector3.down * forceGravity);
+        }
     }
     #endregion
 
@@ -181,6 +183,36 @@ public class PlayerMovement : MonoBehaviour
             count += Time.deltaTime; // 0 ~ 1 까지 Time.deltaTime을 더해줌
                 player.transform.position = Vector3.Lerp(wasPos,targetPos ,count);
                     float distance = Vector3.Distance(targetPos, player.transform.position);                      
+                    //플레이어와 타겟의 사이 거리 계산
+            if(distance <= 1)   // 1만큼 가까워지면 멈춤
+            {                                
+                break;
+            }            
+            yield return null;            
+            isInteract = true;                 // 다시 상호작용할 수 있는 상태로 활성화
+        }                
+    }
+
+    // 상호작용 접근 코루틴
+    public IEnumerator InteractionMove(Vector3 targetPos)
+    {
+        Debug.Log("상호작용 코루틴 실행");                
+        isInteract = false; //상호 작용 비 활성화
+
+        // 1. 해당 오브젝트에게 일정거리까지 다가감
+        float count = 0;
+        Vector3 wasPos = this.transform.position;
+
+        // 타겟 바라보기
+        Vector3 relativePos = targetPos - transform.position;   
+        Quaternion targetViewRotation = Quaternion.LookRotation(relativePos);
+        this.transform.rotation = targetViewRotation;
+
+        while (true)
+        {
+            count += Time.deltaTime; // 0 ~ 1 까지 Time.deltaTime을 더해줌
+                this.transform.position = Vector3.Lerp(wasPos,targetPos ,count);
+                    float distance = Vector3.Distance(targetPos, this.transform.position);                      
                     //플레이어와 타겟의 사이 거리 계산
             if(distance <= 1)   // 1만큼 가까워지면 멈춤
             {                                
