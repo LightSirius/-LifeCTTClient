@@ -23,6 +23,8 @@ namespace Player{
         private PlayerState playerState;            // 플레이어 현재 상태
         private PlayerAnimController playerAnimController;
         // Life Skill 스크립트 추가 바람
+        private Vector3 moveValue = Vector3.zero;
+        private Coroutine skillCoroutine = null;
 
         private void Awake() {
             playerMovement = GetComponent<PlayerMovement>();
@@ -35,26 +37,22 @@ namespace Player{
 
             InputManager.Instance.arrowKeyEvent.AddListener(playerAnimController.UpdateMove);
 
-            InputManager.Instance.arrowKeyEvent.AddListener(CheckMove);
-
             // 키 이벤트 추가
             InputManager.Instance.AddKeyDownListenr(KeyCode.G, DoSkill);
             InputManager.Instance.AddKeyDownListenr(KeyCode.Space, playerMovement.Jump);
         }
 
-        private void OnDisable() {
-            if (InputManager.Instance != null){
-                InputManager.Instance.arrowKeyEvent.RemoveListener(playerMovement.Move);
-                InputManager.Instance.arrowKeyEvent.RemoveListener(playerMovement.Turn);
+        // private void OnDisable() {
+        //     if (InputManager.Instance != null){
+        //         InputManager.Instance.arrowKeyEvent.RemoveListener(playerMovement.Move);
+        //         InputManager.Instance.arrowKeyEvent.RemoveListener(playerMovement.Turn);
             
-                InputManager.Instance.arrowKeyEvent.RemoveListener(playerAnimController.UpdateMove);
+        //         InputManager.Instance.arrowKeyEvent.RemoveListener(playerAnimController.UpdateMove);
 
-                InputManager.Instance.arrowKeyEvent.RemoveListener(CheckMove);
-
-                InputManager.Instance.RemoveKeyDownListenr(KeyCode.G, DoSkill);
-                InputManager.Instance.RemoveKeyDownListenr(KeyCode.Space, playerMovement.Jump);
-            }
-        }
+        //         InputManager.Instance.RemoveKeyDownListenr(KeyCode.G, DoSkill);
+        //         InputManager.Instance.RemoveKeyDownListenr(KeyCode.Space, playerMovement.Jump);
+        //     }
+        // }
 
         private void FixedUpdate() {
             playerMovement.ForceGravity();
@@ -83,41 +81,12 @@ namespace Player{
             }
         }
 
-        // 플레이어가 움직일때 스킬 사용 및 애니메이션을 종료하는 함수
-        // InputManager 이벤트에 OnEnable시 등록함
-        // OnDisable시 이벤트 등록 해제
-        private void CheckMove(Vector2 direction){
-            if (direction.SqrMagnitude() > 0f && playerState != PlayerState.Move){
-                Debug.Log("ddd");
-                // 상태변환
-                playerState = PlayerState.Move;
-
-                // 애니메이션 종료 스크립트 작성 필요
-                playerAnimController.ChangeState(PlayerState.Move);
-
-                // 현재 사용중인 스킬 종료 스크립트 작성 필요
-                // StopCoroutine(DoLifeSkill());
-                StopCoroutine(PlayerLifeInteraction());
-                // UI 초기화 함수 실행
-                UIMgr.Instance.InitUI();
-            }
-        }
-
         private void DoSkill(){
             if (nearInteractionObject != null && playerState != PlayerState.Skill){
-                StartCoroutine(PlayerLifeInteraction());
+                if (skillCoroutine == null){
+                    skillCoroutine = StartCoroutine(DoLifeSkill());
+                }
             }
-        }
-
-        // 기본적으로 사용전 if문으로 nearObject가 null이 아닌지 확인 후 실행 - 확인
-        public IEnumerator PlayerLifeInteraction()
-        {
-
-            // 오브젝트가 파밍가능한 상태고 플레이어상태가 Skill이 아니고 (추가사항) 생활력이 충분하다면
-            // 근처 오브젝트로 다가가는 코루틴 실행
-
-            // 라이프스킬 실행
-            yield return StartCoroutine(DoLifeSkill());
         }
 
         private IEnumerator DoLifeSkill()
@@ -128,7 +97,6 @@ namespace Player{
 
             // 2. 애니메이션 실행
             playerAnimController.ChangeState(nearInteractionObject.lifeType, nearInteractionObject.Type);
-            yield return null;
 
             // 3. UI실행 ( 소요바 및 텍스트 )
             string text = nearInteractionObject.ToString() + "을 채집중입니다...";
@@ -138,7 +106,22 @@ namespace Player{
             while(time <= nearInteractionObject.DurationTime)
             {
                 time += 0.1f;
-                // 서버에 데이터 전송 ?
+                if (playerMovement.velocity.sqrMagnitude > 0f){
+                    // 상태변환
+                    playerState = PlayerState.Move;
+
+                    // 애니메이션 종료 스크립트 작성 필요
+                    playerAnimController.ChangeState(PlayerState.Move);
+
+                    // UI 초기화 함수 실행
+                    UIMgr.Instance.InitUI();
+
+                    if (skillCoroutine != null){
+                        StopCoroutine(skillCoroutine);
+                        skillCoroutine = null;
+                    }
+                } // 서버에 데이터 전송 ?
+               
 
                 yield return new WaitForSeconds(0.1f);
             }
@@ -152,6 +135,8 @@ namespace Player{
             // 7. UI 실행
 
             // 8. 3초 뒤 UI 초기화
+
+            skillCoroutine = null;
         }
     }
 }
