@@ -31,14 +31,14 @@ namespace Player{
         }
 
         private void OnEnable() {
-            InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Move);
-            InputManager.Instance.arrowKeyEvent.AddListener(playerMovement.Turn);
+            InputManager.arrowKeyEvent.AddListener(playerMovement.Move);
+            InputManager.arrowKeyEvent.AddListener(playerMovement.Turn);
 
-            InputManager.Instance.arrowKeyEvent.AddListener(playerAnimController.UpdateMove);
+            InputManager.arrowKeyEvent.AddListener(playerAnimController.UpdateMove);
 
             // 키 이벤트 추가
-            InputManager.Instance.AddKeyDownListenr(KeyCode.G, DoSkill);
-            InputManager.Instance.AddKeyDownListenr(KeyCode.Space, playerMovement.Jump);
+            InputManager.keyDownEvents.AddListener(KeyCode.G, DoSkill);
+            InputManager.keyDownEvents.AddListener(KeyCode.Space, playerMovement.Jump);
         }
 
         // private void OnDisable() {
