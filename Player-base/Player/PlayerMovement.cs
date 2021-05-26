@@ -151,8 +151,7 @@ public class PlayerMovement : MonoBehaviour
     private void InteractionMove()
     {
         if(Input.GetKeyDown(KeyCode.E) && isNear && isInteract)
-        {
-            
+        {            
             StartCoroutine(InteractionMove(myPlayer, targetVec));
         }
     }
@@ -180,7 +179,7 @@ public class PlayerMovement : MonoBehaviour
         while (true)
         {
             count += Time.deltaTime; // 0 ~ 1 까지 Time.deltaTime을 더해줌
-                player.transform.position = Vector3.Lerp(wasPos,targetPos ,count);
+                player.transform.position = Vector3.Lerp(wasPos, targetPos,count);
                     float distance = Vector3.Distance(targetPos, player.transform.position);                      
                     //플레이어와 타겟의 사이 거리 계산
             if(distance <= 1)   // 1만큼 가까워지면 멈춤
