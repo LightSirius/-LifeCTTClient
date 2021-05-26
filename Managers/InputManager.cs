@@ -5,21 +5,22 @@ using UnityEngine;
 using UnityEngine.Events;
 
 namespace Manager{
-    public class InputManager : Singleton<InputManager>
+    public class InputManager : MonoBehaviour
     {
         // 방향키 눌렀을때 발생하는 이벤트
-        public ArrowKeyEvent arrowKeyEvent = new ArrowKeyEvent();
-        // 키를 눌렀을 때 발생하는 이벤트
-        [SerializeField]
-        private List<KeyEvent> keyDownEvents = new List<KeyEvent>();
-        // 키를 누르고 있을 때 발생하는 이벤트
-        [SerializeField]
-        private List<KeyEvent> keyEvents = new List<KeyEvent>();
-        // 키를 땟을 때 발생하는 이벤트
-        [SerializeField]
-        private List<KeyEvent> keyUpEvents = new List<KeyEvent>();
+        public static KeyEvent_Vector2 arrowKeyEvent = new KeyEvent_Vector2();
 
-        private bool isHolding = false;
+        // 마우스 방향정보를 가지고 있는 이벤트
+        public static KeyEvent_Vector2 mousePosEvent = new KeyEvent_Vector2();
+
+        // 키를 눌렀을 때 발생하는 이벤트
+        public  static KeyEvents keyDownEvents = new KeyEvents();
+        // 키를 누르고 있을 때 발생하는 이벤트
+        public static KeyEvents keyEvents = new KeyEvents();
+        // 키를 땟을 때 발생하는 이벤트
+        public static KeyEvents keyUpEvents = new KeyEvents();
+
+        private static bool isHolding = false;
 
         private void OnDestroy() {
             keyEvents.Clear();
@@ -30,6 +31,11 @@ namespace Manager{
         }
 
         private void Update() {
+            float x = Input.GetAxis("Mouse X");
+            float y = Input.GetAxis("Mouse Y");
+
+            mousePosEvent.Invoke(new Vector2(x, y));
+
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
 
@@ -68,66 +74,94 @@ namespace Manager{
             }
         }
 
-        public void AddKeyDownListenr(KeyCode keycode, UnityAction func){
-            KeyEvent temp = keyDownEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
-            if (temp == null){
-                temp = new KeyEvent();
-                temp.keyCode = keycode;
-                keyDownEvents.Add(temp);
+        // public static void AddKeyDownListenr(KeyCode keycode, UnityAction func){
+        //     KeyEvent temp = keyDownEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+        //     if (temp == null){
+        //         temp = new KeyEvent();
+        //         temp.keyCode = keycode;
+        //         keyDownEvents.Add(temp);
+        //     }
+
+        //     temp.keyEvent.AddListener(func);
+        // }
+
+        // public static void RemoveKeyDownListenr(KeyCode keycode, UnityAction func){
+        //     KeyEvent temp = keyDownEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+        //     if (temp == null){
+        //         Debug.LogError("현재 키 미지정 상태");
+        //         return;
+        //     }
+        //     temp.keyEvent.RemoveListener(func);
+        // }
+
+        // public static void AddKeyListenr(KeyCode keycode, UnityAction func){
+        //     KeyEvent temp = keyEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+        //     if (temp == null){
+        //         temp = new KeyEvent();
+        //         temp.keyCode = keycode;
+        //         keyEvents.Add(temp);
+        //     }
+        //     temp.keyEvent.AddListener(func);
+        // }
+
+        // public static void RemoveKeyListenr(KeyCode keycode, UnityAction func){
+        //     KeyEvent temp = keyEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+        //     if (temp == null){
+        //         Debug.LogError("현재 키 미지정 상태");
+        //         return;
+        //     }
+        //     temp.keyEvent.RemoveListener(func);
+        // }
+
+        // public static void AddKeyUpListenr(KeyCode keycode, UnityAction func){
+        //     KeyEvent temp = keyUpEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+        //     if (temp == null){
+        //         temp = new KeyEvent();
+        //         temp.keyCode = keycode;
+        //         keyUpEvents.Add(temp);
+        //     }
+        //     temp.keyEvent.AddListener(func);
+        // }
+
+        // public static void RemoveKeyUpListenr(KeyCode keycode, UnityAction func){
+        //     KeyEvent temp = keyUpEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+        //     if (temp == null){
+        //         Debug.LogError("현재 키 미지정 상태");
+        //         return;
+        //     }
+        //     temp.keyEvent.RemoveListener(func);
+        // }
+
+        public class KeyEvents{
+            public List<KeyEvent> keyEvents = new List<KeyEvent>();
+            public int Count => keyEvents.Count;
+            public KeyEvent this[int i]{
+                get{ return keyEvents[i]; }
             }
 
-            temp.keyEvent.AddListener(func);
-        }
-
-        public void RemoveKeyDownListenr(KeyCode keycode, UnityAction func){
-            KeyEvent temp = keyDownEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
-            if (temp == null){
-                Debug.LogError("현재 키 미지정 상태");
-                return;
+            public void AddListener(KeyCode keycode, UnityAction func){
+                KeyEvent temp = keyEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+                if (temp == null){
+                    temp = new KeyEvent();
+                    temp.keyCode = keycode;
+                    keyEvents.Add(temp);
+                }
+                temp.keyEvent.AddListener(func);
             }
-            temp.keyEvent.RemoveListener(func);
-        }
 
-        public void AddKeyListenr(KeyCode keycode, UnityAction func){
-            KeyEvent temp = keyEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
-            if (temp == null){
-                temp = new KeyEvent();
-                temp.keyCode = keycode;
-                keyEvents.Add(temp);
+            public void RemoveListenr(KeyCode keycode, UnityAction func){
+                KeyEvent temp = keyEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
+                if (temp == null){
+                    Debug.LogError("현재 키 미지정 상태");
+                    return;
+                }
+                temp.keyEvent.RemoveListener(func);
             }
-            temp.keyEvent.AddListener(func);
-        }
 
-        public void RemoveKeyListenr(KeyCode keycode, UnityAction func){
-            KeyEvent temp = keyEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
-            if (temp == null){
-                Debug.LogError("현재 키 미지정 상태");
-                return;
-            }
-            temp.keyEvent.RemoveListener(func);
-        }
-
-        public void AddKeyUpListenr(KeyCode keycode, UnityAction func){
-            KeyEvent temp = keyUpEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
-            if (temp == null){
-                temp = new KeyEvent();
-                temp.keyCode = keycode;
-                keyUpEvents.Add(temp);
-            }
-            temp.keyEvent.AddListener(func);
-        }
-
-        public void RemoveKeyUpListenr(KeyCode keycode, UnityAction func){
-            KeyEvent temp = keyUpEvents.Find((KeyEvent keyEvent) => { return keyEvent.keyCode == keycode; });
-            if (temp == null){
-                Debug.LogError("현재 키 미지정 상태");
-                return;
-            }
-            temp.keyEvent.RemoveListener(func);
+            public void Clear() => keyEvents.Clear();
         }
 
         // 키보드 입력값을 받는 이벤트 클래스
-        [System.Serializable]
         public class KeyEvent{
             public KeyCode keyCode;
             public UnityEvent keyEvent = new UnityEvent();
@@ -135,6 +169,6 @@ namespace Manager{
 
         // 방향키 이벤트를 받는 클래스
         [System.Serializable]
-        public class ArrowKeyEvent : UnityEvent<Vector2> {}
+        public class KeyEvent_Vector2 : UnityEvent<Vector2> {}
     }
 }
